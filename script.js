@@ -40,4 +40,7 @@ form.addEventListener("submit", function (e) {
   form.reset();
 });
 
-renderItems();
+renderItems();function clearList() {
+  items = [];
+  renderItems();
+}

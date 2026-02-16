@@ -21,4 +21,41 @@
 
   <script src="script.js"></script>
 </body>
-</html>
+</html><script>
+    const itemForm = document.getElementById('itemForm');
+    const itemList = document.getElementById('itemList');
+    const totalDisplay = document.getElementById('total');
+    let total = 0;
+
+    itemForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const name = document.getElementById('itemName').value;
+      const price = parseFloat(document.getElementById('itemPrice').value);
+
+      // Create list item
+      const li = document.createElement('li');
+      li.innerHTML = `${name}: <strong>${price.toFixed(2)} ₺</strong>`;
+      
+      // Add delete button
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = 'X';
+      deleteBtn.style.marginLeft = '10px';
+      deleteBtn.onclick = function() {
+        total -= price;
+        totalDisplay.textContent = total.toFixed(2);
+        li.remove();
+      };
+
+      li.appendChild(deleteBtn);
+      itemList.appendChild(li);
+
+      // Update total
+      total += price;
+      totalDisplay.textContent = total.toFixed(2);
+
+      // Reset form
+      itemForm.reset();
+    });
+  </script>
+  
