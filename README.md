@@ -11,7 +11,7 @@ A simple JavaScript shopping list application developed to practice core front-e
 ## Technologies
 - HTML5
 - CSS3
-- JavaScript
+- Javascript
 
 ## What I Learned
 - DOM manipulation
