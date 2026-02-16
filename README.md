@@ -1,19 +1,23 @@
 # Shopping List App 🛒
 
-A simple JavaScript shopping list application.
+A simple JavaScript shopping list application developed to practice core front-end concepts.
 
 ## Features
-- Add / Delete items
+- Add and delete items
 - Total price calculation
-- Form validation
+- Basic form validation
 - Data persistence using localStorage
 
 ## Technologies
-- HTML
-- CSS
+- HTML5
+- CSS3
 - JavaScript
 
-## Learning Outcomes
+## What I Learned
 - DOM manipulation
 - Event handling
-- localStorage usage
+- Working with localStorage
+- Building a small project from scratch
+
+## Status
+🚧 First stage completed – edit/update feature planned.
