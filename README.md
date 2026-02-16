@@ -19,5 +19,4 @@ A simple JavaScript shopping list application developed to practice core front-e
 - Working with localStorage
 - Building a small project from scratch
 
-## Status
-🚧 First stage completed – edit/update feature planned.
+
