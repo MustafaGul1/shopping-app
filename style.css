@@ -1,0 +1,11 @@
+body {
+  font-family: Arial, sans-serif;
+  max-width: 400px;
+  margin: auto;
+}
+
+li {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+}
