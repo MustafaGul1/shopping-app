@@ -1,102 +1,250 @@
-/* Genel Ayarlar */
+/* --- GENEL AYARLAR --- */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f4f4;
+    /* İstenilen Pastel Tema */
+    background: linear-gradient(135deg, #9be15d 0%, #00b09b 100%);
+    min-height: 100vh;
     display: flex;
     justify-content: center;
-    padding-top: 50px;
+    align-items: flex-start;
+    padding-top: 40px;
+    margin: 0;
 }
 
+/* --- ANA KUTU (CONTAINER) --- */
 .container {
-    background-color: white;
-    width: 700px;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    background-color: rgba(255, 255, 255, 0.9); /* Fallback renk */
+    backdrop-filter: blur(10px); /* Modern tarayıcılar için buzlu cam */
+    -webkit-backdrop-filter: blur(10px);
+    
+    width: 95%; /* Mobilde kenarlardan taşmaz */
+    max-width: 600px; /* PC'de çok yayılmaz */
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    margin-bottom: 40px;
 }
 
-h2 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 20px; 
-}
-
-/* --- GÖREV: FLEX YAPISI --- */
-.input-group {
-    display: flex; 
-    gap: 10px;     
-    margin-bottom: 20px;
-}
-
-input {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    outline: none;
-}
-
-#productName {
-    flex: 2; 
-}
-
-#productPrice {
-    flex: 1;
-}
-
-/* --- GÖREV: BUTON HOVER --- */
-button {
-    padding: 10px 10px;
-    background-color: #04f510;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-button:hover {
-    background-color: #218838; 
-}
-/* SİLME BUTONU ÖZEL AYARLARI */
-.delete-btn {
-    background-color: white !important; /* Arka plan beyaz olsun */
-    color: #ff4444 !important;         /* Yazı rengi kırmızı olsun */
-    border: 1px solid #ff4444 !important; /* Çerçevesi kırmızı olsun */
-    padding: 5px 10px !important;
-    margin-left: 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-/* Üzerine Mouse Gelince (Hover) */
-.delete-btn:hover {
-    background-color: #ff4444 !important; /* Arka plan kırmızıya dönsün */
-    color: white !important;              /* Yazı beyaza dönsün */
-    transform: scale(1.1);                /* Hafifçe büyüsün */
-}
-/* Liste Elemanları */
-ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-li {
+header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #fff;
-    border-bottom: 1px solid #eee;
-    padding: 10px; 
+    margin-bottom: 20px;
 }
 
-/* Toplam Alanı */
-.total-section {
-    text-align: right;
-    margin-top: 20px;
-    font-size: 1.2rem;
+h2 { margin: 0; color: #333; font-size: 1.5rem; }
+
+/* Küçük butonlar (Export/Import) */
+.sm-btn {
+    font-size: 0.75rem;
+    padding: 5px 10px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    color: #555;
+    display: inline-block;
+}
+.sm-btn:hover { background: #f0f0f0; }
+
+/* --- GİRDİ ALANLARI --- */
+.input-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+    flex-wrap: wrap; /* Mobilde alt satıra geçebilsin */
+}
+
+input, select {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    font-size: 1rem;
+    transition: border 0.2s;
+}
+
+input:focus, select:focus {
+    border-color: #00b09b;
+    box-shadow: 0 0 0 3px rgba(0, 176, 155, 0.1);
+}
+
+/* Girdi Alanı Genişlikleri */
+#productName { flex: 2; min-width: 120px; }
+#productCategory { flex: 1; }
+#productPrice { flex: 0.8; min-width: 70px; }
+
+/* Ekle Butonu */
+#addBtn {
+    padding: 0 20px;
+    background-color: #00b09b;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#addBtn:hover { background-color: #008a7a; }
+#addBtn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* --- TOOLBAR (Arama & Sıralama) --- */
+.toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px dashed #ccc;
+}
+#searchInput { flex: 1; padding: 8px; font-size: 0.9rem; }
+#sortSelect { padding: 8px; font-size: 0.9rem; }
+
+/* --- LİSTE TASARIMI --- */
+ul { list-style: none; padding: 0; margin: 0; }
+
+li {
+    background: white;
+    margin-bottom: 8px;
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    
+    /* İstenilen Animasyon */
+    animation: slideIn 0.15s ease-out forwards;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Ürün Bilgisi Alanı */
+.item-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.item-meta {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 2px;
+}
+
+.category-badge {
+    background: #eef2ff;
+    color: #4f46e5;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 5px;
+    font-weight: bold;
+}
+
+/* --- BUTON GRUBU (Sağ Taraf) --- */
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.price-tag {
     font-weight: bold;
     color: #333;
+    margin-right: 5px;
+}
+
+/* Edit Butonu */
+.edit-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+.edit-btn:hover { opacity: 1; }
+
+/* Silme Butonu (Modern SVG - Trash Can) */
+.delete-btn {
+    background: #fee2e2;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #dc2626;
+    transition: all 0.2s ease;
+}
+
+.delete-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+/* Hover Efekti: Hafif Döndürme */
+.delete-btn:hover {
+    background: #dc2626;
+    color: white;
+    transform: rotate(10deg) scale(1.05);
+}
+
+/* --- BOŞ DURUM & ALT KISIM --- */
+.empty-state {
+    text-align: center;
+    color: #888;
+    padding: 20px;
+    font-style: italic;
+}
+
+.total-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 15px;
     border-top: 2px solid #eee;
-    padding-top: 10px;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.clear-btn {
+    background: #f1f1f1;
+    color: #666;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.clear-btn:hover { background: #ffdede; color: #d00; }
+/* --- ERİŞİLEBİLİRLİK (Screen Reader Only) --- */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* SVG İkonlarının tıklanmasını engelle (Event delegation için) */
+svg {
+    pointer-events: none; 
 }

@@ -1,27 +1,62 @@
 <!DOCTYPE html>
-<html lang="eng">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shopping List</title>
+    <title>Güvenli Alışveriş Listesi</title>
     <link rel="stylesheet" href="style.css">
-</head>   
+</head>
 <body>
 
     <div class="container">
-        <h2>🛒 Shopping List </h2>
+        <header>
+            <h2>🛒 Alışveriş Listem</h2>
+            <div class="data-controls">
+                <button type="button" id="exportBtn" class="sm-btn">⬇️ JSON İndir</button>
+                <label for="importFile" class="sm-btn import-label">⬆️ Yükle</label>
+                <input type="file" id="importFile" accept=".json" style="display: none;">
+            </div>
+        </header>
 
-        <div class="input-group">
-            <input type="text" id="productName" placeholder="Product name">
-            <input type="number" id="productPrice" placeholder="Price">
-            <button id="addBtn">Add</button>
+        <form id="addItemForm" class="input-group">
+            <label for="productName" class="visually-hidden">Ürün Adı</label>
+            <input type="text" id="productName" placeholder="Ürün adı..." required>
+            
+            <label for="productCategory" class="visually-hidden">Kategori</label>
+            <select id="productCategory">
+                <option value="Genel">Genel</option>
+                <option value="Gıda">Gıda</option>
+                <option value="Temizlik">Temizlik</option>
+                <option value="Giyim">Giyim</option>
+                <option value="Elektronik">Elektronik</option>
+            </select>
+
+            <label for="productPrice" class="visually-hidden">Fiyat</label>
+            <input type="number" id="productPrice" placeholder="0.00" min="0" step="0.01" required>
+            
+            <button type="submit" id="addBtn">Ekle</button>
+        </form>
+
+        <div class="toolbar">
+            <input type="text" id="searchInput" placeholder="🔍 Listede ara..." aria-label="Ürün ara">
+            <select id="sortSelect" aria-label="Sıralama">
+                <option value="date-desc">Yeniden Eskiye</option>
+                <option value="date-asc">Eskiden Yeniye</option>
+                <option value="price-asc">Fiyat (Artan)</option>
+                <option value="price-desc">Fiyat (Azalan)</option>
+                <option value="alpha-asc">A-Z</option>
+            </select>
         </div>
 
-        <ul id="listArea">
-            </ul>
+        <ul id="listArea" aria-live="polite"></ul>
+        
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <p>📭 Henüz ürün eklenmedi.</p>
+        </div>
 
-        <div class="total-section">
-            Total: <span id="totalPrice">0</span> ₺
+        <div class="total-section" role="status">
+            <div>Toplam: <span id="totalPrice">0,00 ₺</span></div>
+            <button type="button" id="clearAllBtn" class="clear-btn">Tümünü Temizle</button>
         </div>
     </div>
 
