@@ -1,24 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="eng">
 <head>
-  <meta charset="UTF-8">
-  <title>Shopping List</title>
-  <link rel="stylesheet" href="style.css">
-</head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping List</title>
+    <link rel="stylesheet" href="style.css">
+</head>   
 <body>
 
-  <h1> Shopping List</h1>
+    <div class="container">
+        <h2>🛒 Shopping List </h2>
 
-  <form id="itemForm">
-    <input type="text" id="itemName" placeholder="Item name" required>
-    <input type="number" id="itemPrice" placeholder="Price" required>
-    <button type="submit">Add</button>
-  </form>
+        <div class="input-group">
+            <input type="text" id="productName" placeholder="Product name">
+            <input type="number" id="productPrice" placeholder="Price">
+            <button id="addBtn">Add</button>
+        </div>
 
-  <ul id="itemList"></ul>
+        <ul id="listArea">
+            </ul>
 
-  <h3>Total: <span id="total">0</span> ₺</h3>
+        <div class="total-section">
+            Total: <span id="totalPrice">0</span> ₺
+        </div>
+    </div>
 
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
