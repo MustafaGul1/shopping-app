@@ -1,61 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>Shopping List</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping List</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <h1> Shopping List</h1>
+    <div class="container">
+        <h2>🛒 Shopping List </h2>
 
-  <form id="itemForm">
-    <input type="text" id="itemName" placeholder="Item name" required>
-    <input type="number" id="itemPrice" placeholder="Price" required>
-    <button type="submit">Add</button>
-  </form>
+        <div class="input-group">
+            <input type="text" id="productName" placeholder="Product name">
+            <input type="number" id="productPrice" placeholder="Price">
+            <button id="addBtn">Add</button>
+        </div>
 
-  <ul id="itemList"></ul>
+        <ul id="listArea">
+            </ul>
 
-  <h3>Total: <span id="total">0</span> ₺</h3>
+        <div class="total-section">
+            Total: <span id="totalPrice">0</span> ₺
+        </div>
+    </div>
 
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
-</html><script>
-    const itemForm = document.getElementById('itemForm');
-    const itemList = document.getElementById('itemList');
-    const totalDisplay = document.getElementById('total');
-    let total = 0;
-
-    itemForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-
-      const name = document.getElementById('itemName').value;
-      const price = parseFloat(document.getElementById('itemPrice').value);
-
-      // Create list item
-      const li = document.createElement('li');
-      li.innerHTML = `${name}: <strong>${price.toFixed(2)} ₺</strong>`;
-      
-      // Add delete button
-      const deleteBtn = document.createElement('button');
-      deleteBtn.textContent = 'X';
-      deleteBtn.style.marginLeft = '10px';
-      deleteBtn.onclick = function() {
-        total -= price;
-        totalDisplay.textContent = total.toFixed(2);
-        li.remove();
-      };
-
-      li.appendChild(deleteBtn);
-      itemList.appendChild(li);
-
-      // Update total
-      total += price;
-      totalDisplay.textContent = total.toFixed(2);
-
-      // Reset form
-      itemForm.reset();
-    });
-  </script>
-  
+</html>
