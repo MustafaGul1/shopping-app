@@ -168,7 +168,7 @@ listArea.addEventListener('click', (e) => {
 addItemForm.addEventListener('submit', (e) => {
     e.preventDefault(); // Sayfanın yenilenmesini engelle
 
-    const name = nameInput.value.trim();
+    const name = nameInput.value.trim().slice(0, 80); // İlk 80 karakter
     const price = parseFloat(priceInput.value);
     const category = categoryInput.value;
 
