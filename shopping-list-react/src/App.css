@@ -1,63 +1,64 @@
-/* --- GENEL SAYFA AYARLARI --- */
+/* --- 1. GENEL SAYFA AYARLARI (Pastel Tema) --- */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  /* Arka plan rengi (Yeşil Gradient) */
-  background: linear-gradient(135deg, #9be15d 0%, #00b09b 100%);
-  min-height: 100vh; /* Tüm ekranı kapla */
+  background: linear-gradient(135deg, #9be15d 0%, #00b09b 100%); /* Senin sevdiğin renk */
+  min-height: 100vh;
   margin: 0;
-  display: flex; /* Ortalamak için şart */
-  justify-content: center; /* Yatayda ortala */
-  align-items: flex-start; /* Dikeyde üstten başla */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
   padding-top: 50px;
   color: #444;
 }
 
-/* --- ANA KUTU (ORTADAKİ BEYAZ KART) --- */
+/* --- 2. ANA KUTU (Buzlu Cam Efekti) --- */
 .container {
   background-color: rgba(255, 255, 255, 0.95); /* Yarı saydam beyaz */
-  backdrop-filter: blur(10px); /* Buzlu cam efekti */
-  width: 90%;
-  max-width: 600px; /* Çok geniş olmasın */
+  backdrop-filter: blur(10px); /* Buzlu cam */
+  -webkit-backdrop-filter: blur(10px);
+  width: 95%;
+  max-width: 850px; /* Genişletilmiş Mod (Sığması için) */
   padding: 30px;
-  border-radius: 16px; /* Yuvarlak köşeler */
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2); /* Gölge */
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  margin-bottom: 40px;
+  box-sizing: border-box; 
 }
 
 h2 {
   text-align: center;
   margin-top: 0;
   color: #333;
+  font-size: 1.8rem;
 }
 
-/* --- FORM VE INPUTLAR --- */
+/* --- 3. FORM VE INPUT HİZALAMA (AKILLI MOD) --- */
 .input-group {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
-  flex-wrap: wrap; /* Mobilde sığmazsa alt satıra geç */
+  align-items: center;
+  flex-wrap: nowrap; /* Tek satırda kalmaya zorla */
 }
 
-input, select {
-  padding: 12px;
-  border: 2px solid #eee;
-  border-radius: 8px;
-  outline: none;
-  font-size: 1rem;
-  background-color: #fff;
-  transition: all 0.3s;
+/* Kim ne kadar yer kaplasın? */
+.input-group input[type="text"] { 
+  flex: 3; /* Ürün adı geniş olsun */
+  min-width: 150px;
 }
 
-input:focus, select:focus {
-  border-color: #00b09b;
+.input-group select { 
+  flex: 1; /* Kategori orta */
 }
 
-/* Fiyat kutusundaki siyahlığı engelleme (Özel Fix) */
-input[type="number"] {
-  color-scheme: light; 
+.input-group input[type="number"] { 
+  flex: 0.8; /* Fiyat dar olsun */
+  min-width: 80px;
 }
 
-/* Ekle Butonu */
 #addBtn {
+  flex: 0 0 auto; /* Buton asla sıkışmasın */
+  white-space: nowrap;
   background-color: #00b09b;
   color: white;
   border: none;
@@ -73,7 +74,51 @@ input[type="number"] {
   transform: scale(1.05);
 }
 
-/* --- ARAÇ ÇUBUĞU (FİLTRELER) --- */
+/* --- 4. INPUT GÖRÜNÜM AYARLARI (GÖRÜNMEZ YAZI ÇÖZÜMÜ) --- */
+input, select {
+  padding: 12px;
+  border: 2px solid #eee;
+  border-radius: 8px;
+  outline: none;
+  font-size: 1rem;
+  transition: all 0.3s;
+  
+  /* --- KESİN ÇÖZÜM --- */
+  background-color: #ffffff !important; /* Arka plan kesinlikle BEYAZ */
+  color: #000000 !important; /* Yazılar kesinlikle SİYAH */
+  opacity: 1 !important;
+}
+
+input:focus, select:focus {
+  border-color: #00b09b;
+}
+
+option {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+::placeholder {
+  color: #777 !important; 
+  opacity: 1 !important;
+}
+
+/* Siyah oku gizle (Chrome/Edge) */
+input[list]::-webkit-calendar-picker-indicator {
+  display: none !important;
+}
+/* Firefox için */
+input[list] {
+  -moz-appearance: none;
+  appearance: none;
+} 
+
+/* Fiyat kutusundaki okları düzelt */
+input[type="number"] {
+  color-scheme: light; 
+}
+
+/* --- 5. ARAÇ ÇUBUĞU --- */
 .toolbar {
   display: flex;
   gap: 10px;
@@ -82,29 +127,29 @@ input[type="number"] {
   border-bottom: 1px dashed #ccc;
   flex-wrap: wrap;
 }
-
 .toolbar input { flex: 1; }
 
 .fav-filter-btn {
   background: white;
   border: 1px solid #ddd;
-  padding: 8px 12px;
-  border-radius: 6px;
+  padding: 0;
+  width: 40px; /* Kare buton */
+  height: 40px;
+  border-radius: 8px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
 }
-
 .fav-filter-btn.active {
   background: #ffebee;
   color: #d32f2f;
   border-color: #d32f2f;
 }
 
-/* --- LİSTE ELEMANLARI --- */
-ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
+/* --- 6. LİSTE VE KARTLAR --- */
+ul { list-style: none; padding: 0; margin: 0; }
 
 li {
   background: white;
@@ -116,19 +161,20 @@ li {
   align-items: center;
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
   border-left: 5px solid #00b09b;
+  animation: slideIn 0.3s ease-out forwards;
 }
 
-/* Favori seçili ürün */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 li.fav-item {
-  border-left-color: #d32f2f; /* Kırmızı çizgi */
+  border-left-color: #d32f2f;
   background-color: #fff5f5;
 }
 
-.item-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+.item-info { display: flex; align-items: center; gap: 10px; }
 
 .category-badge {
   background: #e0f2f1;
@@ -139,29 +185,88 @@ li.fav-item {
   font-weight: bold;
 }
 
-/* Trend Okları */
 .trend-up { color: #d32f2f; font-weight: bold; }
 .trend-down { color: #2e7d32; font-weight: bold; }
 
-/* --- AKSİYONLAR VE TOPLAM --- */
-.actions {
+/* --- 7. AKSİYON BUTONLARI (ANIMASYONLU) --- */
+.actions { display: flex; align-items: center; gap: 10px; }
+.price-tag { font-weight: bold; font-size: 1.1rem; margin-right: 10px;}
+
+/* MODERN KALP BUTONU */
+.fav-btn {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  cursor: pointer;
+  padding: 0;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  transition: transform 0.2s;
 }
 
-.price-tag {
-  font-weight: bold;
-  font-size: 1.1rem;
+.fav-btn svg, .fav-filter-btn svg {
+  width: 26px;
+  height: 26px;
+  filter: drop-shadow(0 2px 3px rgba(255, 71, 87, 0.2));
+  transition: all 0.3s ease;
 }
 
-.action-btn {
-  background: none;
+.fav-btn:hover, .fav-filter-btn:hover {
+  transform: scale(1.15); /* Büyüme efekti */
+}
+.fav-btn:active, .fav-filter-btn:active { transform: scale(0.9); }
+
+/* UÇAN KAPAKLI ÇÖP KUTUSU */
+.bin-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background-color: #ff4757;
   border: none;
-  font-size: 1.2rem;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(255, 71, 87, 0.4);
+  transition: all 0.3s;
 }
 
+.bin-button:hover {
+  background-color: #e84118;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(255, 71, 87, 0.6);
+}
+
+.bin-top {
+  width: 16px;
+  transform-origin: right bottom;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  position: absolute;
+  top: 10px;
+  z-index: 2;
+  fill: white;
+}
+
+.bin-bottom {
+  width: 14px;
+  position: absolute;
+  top: 13px;
+  z-index: 1;
+  fill: white;
+}
+
+/* Kapak Hareketi: Hem dönüyor hem yukarı zıplıyor */
+.bin-button:hover .bin-top {
+  transform: rotate(28deg) translateY(-1px) translateX(1px);
+}
+
+/* --- 8. İSTATİSTİK VE MOBİL UYUM --- */
 .stats-section {
   margin-top: 20px;
   padding-top: 15px;
@@ -174,6 +279,7 @@ li.fav-item {
   color: #00b09b;
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
 .category-breakdown {
@@ -185,9 +291,12 @@ li.fav-item {
   flex-wrap: wrap;
 }
 
-.cat-stat strong { color: #333; }
+.cat-stat {
+  background: #f1f3f5;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
 
-/* Temizle butonu (yazı şeklinde) */
 .clear-btn-text {
   background: none;
   border: none;
@@ -196,184 +305,217 @@ li.fav-item {
   text-decoration: underline;
   font-size: 0.9rem;
 }
-.clear-btn-text:hover { color: #555; }
+.clear-btn-text:hover { color: #d32f2f; }
 
-/* --- ERİŞİLEBİLİRLİK (Screen Reader Only) --- */
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+@media (max-width: 700px) {
+  .container { padding: 15px; }
+  .input-group { flex-wrap: wrap !important; }
+  .input-group input[type="text"] { flex: 100%; }
+  .input-group select { flex: 1; }
+  .input-group input[type="number"] { flex: 1; }
+  #addBtn { width: 100%; margin-top: 5px; }
+}
+/* --- MEVCUT STİLLERİN AYNISI + YENİ EKLENTİLER --- */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #9be15d 0%, #00b09b 100%);
+  min-height: 100vh;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 50px;
+  color: #444;
+}
+
+.container {
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  width: 95%;
+  max-width: 850px;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  margin-bottom: 40px;
+  box-sizing: border-box;
+  position: relative; /* Toast için gerekli */
+}
+
+h2 {
+  text-align: center;
+  margin-top: 0;
+  color: #333;
+}
+
+/* --- FORM --- */
+.input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  align-items: center;
+  flex-wrap: nowrap;
+  transition: all 0.3s;
+}
+
+/* Düzenleme Modunda Formun Rengi Değişsin */
+.input-group.editing-mode {
+  background: #fff8e1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px dashed #ffc107;
+}
+
+.input-group input[type="text"] { flex: 3; min-width: 150px; }
+.input-group select { flex: 1; }
+.input-group input[type="number"] { flex: 0.8; min-width: 70px; }
+
+#addBtn {
+  flex: 0 0 auto;
   white-space: nowrap;
-  border: 0;
-}
-
-/* SVG İkonlarının tıklanmasını engelle (Event delegation için) */
-svg {
-  pointer-events: none; 
-}
-/* --- GÖRÜNMEZ YAZI SORUNU ÇÖZÜMÜ --- */
-
-/* Tüm yazı kutularını zorla ayarla */
-input, select {
-  background-color: #ffffff !important; /* Arka plan kesinlikle BEYAZ olsun */
-  color: #000000 !important; /* Yazılar kesinlikle SİYAH olsun */
-  opacity: 1 !important; /* Şeffaflık olmasın */
-}
-
-/* Dropdown (Seçim menüsü) içindeki seçenekler */
-option {
-  background-color: #ffffff !important;
-  color: #000000 !important;
-}
-
-/* Silik yazı (Placeholder) rengi - Gri olsun */
-::placeholder {
-  color: #777777 !important; 
-  opacity: 1 !important;
-}
-
-/* Otomatik doldurma yapıldığında arka planın mavi olmasını engelle */
-input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus, 
-input:-webkit-autofill:active{
-    -webkit-box-shadow: 0 0 0 30px white inset !important;
-    -webkit-text-fill-color: black !important;
-}
-/* --- BÜYÜK VE NET ÇÖP KUTUSU (V2) --- */
-
-.bin-button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 50px;  /* ESKİSİ 35px İDİ, BÜYÜTTÜK */
-  height: 50px; /* ESKİSİ 35px İDİ, BÜYÜTTÜK */
-  border-radius: 12px; /* Köşeler daha yumuşak */
-  background-color: #ff4757; /* Daha canlı bir kırmızı */
-  cursor: pointer;
+  background-color: #00b09b;
+  color: white;
   border: none;
-  box-shadow: 0 5px 15px rgba(255, 71, 87, 0.3); /* Hafif gölge ekledik */
-  transition-duration: 0.3s;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Çöp Kutusunun Kapağı (Üst) */
-.bin-top {
-  width: 15px; /* İKONU BÜYÜTTÜK */
-  transform-origin: right bottom; /* Menteşe noktası: Sağ alt */
-  transition-duration: 0.3s;
-  z-index: 2;
-  fill: white; /* İçi dolu ol */
-}
-
-/* Çöp Kutusunun Gövdesi (Alt) */
-.bin-bottom {
-  width: 12px; /* İKONU BÜYÜTTÜK */
-  z-index: 1;
-  fill: white; /* İçi dolu beyaz olsun */
-}
-
-/* HOVER (ÜZERİNE GELİNCE)  */
-
-/* Arka plan biraz koyulaşsın */
-.bin-button:hover {
-  background-color: #ff6b81; 
-  transform: scale(1.05); /* Butonun kendisi de hafif büyüsün */
-}
-
-/* Kapak açılma hareketi */
-.bin-button:hover .bin-top {
-  transform: rotate(45deg) translateY(-1.5px); /* Daha geniş açıl! */
-}
-
-/* Tıklayınca (Active) */
-.bin-button:active {
-  transform: scale(0.95);
-}
-/* --- MODERN KALP BUTONU --- */
-.fav-btn {
-  background: transparent; /* Arkası şeffaf */
-  border: none;
+  padding: 12px 25px;
+  border-radius: 8px;
+  font-weight: bold;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 50%; /* Yuvarlak alan */
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.fav-btn svg {
-  width: 28px; /* Kalp boyutu */
-  height: 28px;
   transition: transform 0.2s;
 }
+#addBtn:hover { background-color: #008a7a; transform: scale(1.05); }
 
-/* Üzerine gelince (Hover) - Etrafı hafif kırmızı olsun, kalp büyüsün */
-.fav-btn:hover {
-  background-color: rgba(255, 71, 87, 0.1); /* Çok hafif kırmızı zemin */
-}
-
-.fav-btn:hover svg {
-  transform: scale(1.2); /* Kalp büyüsün */
-}
-
-/* Tıklayınca kalp "atıyormuş" gibi olsun */
-.fav-btn:active svg {
-  transform: scale(0.9);
-}
-
-
-/* --- GELİŞMİŞ ÇÖP KUTUSU (UÇAN KAPAK EFEKTİ) --- */
-.bin-button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 45px;
-  height: 45px;
-  border-radius: 10px;
-  background-color: #ff4757;
-  cursor: pointer;
+.cancel-btn {
+  background: #ff4757;
+  color: white;
   border: none;
-  box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-  transition-duration: 0.3s;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-weight: bold;
+  margin-left: 5px;
 }
 
-/* Çöp Kutusunun Kapağı */
-.bin-top {
-  width: 15px;
-  transform-origin: right bottom; 
-  transition-duration: 0.3s; 
-  /* Kapağın konumu */
-  position: relative;
-  top: 2px; /* Gövdeye biraz yakın dursun */
+/* --- INPUT RESETLERİ --- */
+input, select {
+  padding: 12px;
+  border: 2px solid #eee;
+  border-radius: 8px;
+  outline: none;
+  font-size: 1rem;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  opacity: 1 !important;
+}
+input:focus, select:focus { border-color: #00b09b; }
+::placeholder { color: #777 !important; opacity: 1 !important; }
+input[list]::-webkit-calendar-picker-indicator { display: none !important; opacity: 0 !important; }
+
+/* --- TOOLBAR --- */
+.toolbar {
+  display: flex; gap: 10px; margin-bottom: 15px; padding-bottom: 15px;
+  border-bottom: 1px dashed #ccc; flex-wrap: wrap;
+}
+.toolbar input { flex: 1; }
+
+.fav-filter-btn {
+  background: white; border: 1px solid #ddd; width: 40px; height: 40px;
+  border-radius: 8px; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; transition: all 0.2s;
+}
+.fav-filter-btn.active { background: #ffebee; border-color: #d32f2f; }
+
+/* --- LİSTE --- */
+ul { list-style: none; padding: 0; margin: 0; }
+li {
+  background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px;
+  display: flex; justify-content: space-between; align-items: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid #00b09b;
+  animation: slideIn 0.3s ease-out forwards;
+}
+@keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+li.fav-item { border-left-color: #d32f2f; background-color: #fff5f5; }
+
+.item-info { display: flex; align-items: center; gap: 10px; flex: 1; }
+
+.category-badge {
+  background: #e0f2f1; color: #00695c; font-size: 0.75rem;
+  padding: 4px 8px; border-radius: 4px; font-weight: bold;
 }
 
-/* Çöp Kutusunun Gövdesi */
-.bin-bottom {
-  width: 13px;
-  z-index: 1;
+.item-details { display: flex; align-items: center; gap: 8px; }
+
+/* YENİ: Miktar Rozeti (x2, x3 gibi) */
+.qty-badge {
+  background: #333; color: white; font-size: 0.75rem;
+  padding: 2px 6px; border-radius: 10px; font-weight: bold;
 }
 
-/* --- HOVER ANİMASYONU --- */
-.bin-button:hover {
-  background-color: #ff6b81;
+.trend-up { color: #d32f2f; } .trend-down { color: #2e7d32; }
+
+.actions { display: flex; align-items: center; gap: 10px; }
+.price-tag { font-weight: bold; font-size: 1.1rem; margin-right: 10px; }
+
+/* --- BUTONLAR --- */
+.fav-btn, .fav-filter-btn {
+  background: transparent !important; border: none !important; outline: none !important;
+  cursor: pointer; padding: 0; width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center; transition: transform 0.2s;
+}
+.fav-btn svg, .fav-filter-btn svg {
+  width: 26px; height: 26px; filter: drop-shadow(0 2px 3px rgba(255, 71, 87, 0.2));
+  transition: all 0.3s ease;
+}
+.fav-btn:hover, .fav-filter-btn:hover { transform: scale(1.15); }
+
+.bin-button {
+  width: 40px; height: 40px; border-radius: 10px; background-color: #ff4757;
+  border: none; cursor: pointer; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; position: relative; overflow: hidden;
+  box-shadow: 0 4px 10px rgba(255, 71, 87, 0.4); transition: all 0.3s;
+}
+.bin-button:hover { background-color: #e84118; transform: translateY(-2px); }
+.bin-button:hover .bin-top { transform: rotate(-45deg) translateY(-5px) translateX(2px); }
+.bin-top, .bin-bottom { position: absolute; fill: white; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+.bin-top { width: 16px; top: 10px; z-index: 2; transform-origin: right bottom; }
+.bin-bottom { width: 14px; top: 13px; z-index: 1; }
+
+/* --- İSTATİSTİK --- */
+.stats-section { margin-top: 20px; padding-top: 15px; border-top: 2px solid #eee; }
+.grand-total { font-size: 1.4rem; font-weight: bold; color: #00b09b; display: flex; justify-content: space-between; align-items: center; }
+.category-breakdown { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; font-size: 0.85rem; }
+.cat-stat { background: #f1f3f5; padding: 4px 8px; border-radius: 4px; }
+.clear-btn-text { background: none; border: none; color: #888; cursor: pointer; text-decoration: underline; font-size: 0.9rem; }
+.clear-btn-text:hover { color: #d32f2f; }
+
+/* --- YENİ: TOAST BİLDİRİMİ --- */
+.toast-notification {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 25px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  font-weight: bold;
+  z-index: 1000;
+  animation: fadeInUp 0.3s ease-out forwards;
+}
+.toast-notification.success { background-color: #00b09b; }
+.toast-notification.error { background-color: #ff4757; }
+.toast-notification.info { background-color: #2196f3; }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translate(-50%, 20px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
 }
 
-/* İşte sihir burada: Kapak hem dönecek hem yukarı uçacak! */
-.bin-button:hover .bin-top {
-  transform: rotate(-45deg) translateY(-5px) translateX(-2px);
-  /* translateY(-5px) -> Kapağı havaya kaldırır (ayırır) */
-  /* rotate(-45deg) -> Kapağı açar */
-}
-
-.bin-button:active {
-  transform: scale(0.95);
+@media (max-width: 700px) {
+  .container { padding: 15px; }
+  .input-group { flex-wrap: wrap !important; }
+  .input-group input[type="text"] { flex: 100%; }
+  .input-group select { flex: 1; }
+  #addBtn { width: 100%; margin-top: 5px; }
 }
