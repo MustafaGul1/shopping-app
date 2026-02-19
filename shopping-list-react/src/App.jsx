@@ -16,8 +16,7 @@ function App() {
   const [sortType, setSortType] = useState("date-desc");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
-  // 🔴 RENDER BACKEND LİNKİMİZ
-  const API_URL = "https://shopping-backend-x3jp.onrender.com/api";
+  
 
   const commonProducts = [
     "Süt", "Ekmek", "Yumurta", "Peynir", "Yoğurt", "Domates", 
