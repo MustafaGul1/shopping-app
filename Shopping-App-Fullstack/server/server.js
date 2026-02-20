@@ -35,7 +35,11 @@ const rateLimit = require('express-rate-limit');
 
 const app = express();
 
-app.use(helmet()); 
+// RENDER PROXY'SİNE GÜVEN (Bu satırı ekliyoruz)
+app.set('trust proxy', 1);
+
+// --- 🛡️ GÜVENLİK ZIRHLARI AKTİF ---
+app.use(helmet());
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
