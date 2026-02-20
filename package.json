@@ -1,6 +1,9 @@
 {
   "dependencies": {
+    "cloudinary": "^1.41.3",
     "express-rate-limit": "^8.2.1",
-    "helmet": "^8.1.0"
+    "helmet": "^8.1.0",
+    "multer": "^2.0.2",
+    "multer-storage-cloudinary": "^4.0.0"
   }
 }
