@@ -12,7 +12,6 @@ function App() {
     return localStorage.getItem('darkMode') === 'true';
   });
 
-  // Tema değiştiğinde Body'e class ekle ve hafızaya kaydet
   useEffect(() => {
     if (isDarkMode) {
       document.body.classList.add('dark-mode');
@@ -23,19 +22,23 @@ function App() {
     }
   }, [isDarkMode]);
 
-  // --- ÜRÜN STATE'LERİ ---
+  // --- ÜRÜN VE YÜKLEME (LOADING) STATE'LERİ ---
   const [items, setItems] = useState([]);
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
-  const [image, setImage] = useState(null); // 📸 Fotoğraf state'i
+  const [image, setImage] = useState(null); 
   const [category, setCategory] = useState("Genel");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortType, setSortType] = useState("date-desc");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-
   
+  // YENİ: Yükleniyor efekti için State
+  const [isAdding, setIsAdding] = useState(false); 
 
-// 🔴 RENDER BACKEND LİNKİMİZ (Bunu kazara silmişiz!)
+  // YENİ: Ortak Ekleme için State'ler
+  const [partnerEmail, setPartnerEmail] = useState("");
+  const [shareMessage, setShareMessage] = useState("");
+
   const API_URL = "https://shopping-backend-x3jp.onrender.com/api";
 
   const commonProducts = [
@@ -50,7 +53,6 @@ function App() {
   const handleAuth = async (e) => {
     e.preventDefault();
     const endpoint = isLoginMode ? '/auth/login' : '/auth/register';
-    
     try {
       const res = await fetch(`${API_URL}${endpoint}`, {
         method: 'POST',
@@ -63,7 +65,7 @@ function App() {
         if (isLoginMode) {
           setToken(data.token);
           localStorage.setItem('token', data.token);
-          setAuthForm({ name: '', email: '', password: '' }); // Formu temizle
+          setAuthForm({ name: '', email: '', password: '' }); 
         } else {
           alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
           setIsLoginMode(true);
@@ -71,9 +73,7 @@ function App() {
       } else {
         alert("Hata: " + data.error);
       }
-    } catch (err) {
-      alert("Sunucuya bağlanılamadı!");
-    }
+    } catch (err) { alert("Sunucuya bağlanılamadı!"); }
   };
 
   const handleLogout = () => {
@@ -95,82 +95,95 @@ function App() {
         const data = await res.json();
         setItems(data);
       } else if (res.status === 401) {
-        handleLogout(); // Biletin süresi dolmuşsa çıkış yap
+        handleLogout(); 
       }
-    } catch (err) {
-      console.error("Veri çekme hatası:", err);
-    }
+    } catch (err) { console.error("Veri çekme hatası:", err); }
   };
 
-  // Token değiştiğinde (giriş yapıldığında) verileri çek
   useEffect(() => {
     fetchItems();
   }, [token]);
 
- // ==========================================
-  // 3. VERİTABANINA ÜRÜN VE FOTOĞRAF EKLEME
+  // ==========================================
+  // 🤝 3. YENİ: ORTAK EKLEME (PAYLAŞIM) İŞLEMİ
+  // ==========================================
+  const handleShare = async (e) => {
+    e.preventDefault();
+    if (!partnerEmail.trim()) return;
+
+    try {
+      const res = await fetch(`${API_URL}/share`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({ partnerEmail: partnerEmail.trim() })
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        setShareMessage("✅ Başarıyla eklendi!");
+        setPartnerEmail("");
+        fetchItems(); // Ortak eklenince listeyi hemen yenile ki onun ürünleri de gelsin!
+        setTimeout(() => setShareMessage(""), 3000); // 3 saniye sonra mesajı gizle
+      } else {
+        setShareMessage(`❌ Hata: ${data.error}`);
+        setTimeout(() => setShareMessage(""), 3000);
+      }
+    } catch (err) {
+      setShareMessage("❌ Sunucu hatası!");
+    }
+  };
+
+  // ==========================================
+  // 4. VERİTABANINA ÜRÜN VE FOTOĞRAF EKLEME
   // ==========================================
   const handleAdd = async (e) => {
     e.preventDefault();
     if (!name.trim() || price <= 0) return;
 
-    // 📦 DOSYA GÖNDERMEK İÇİN ÖZEL KARGO PAKETİ (FormData)
+    setIsAdding(true); // YÜKLENİYOR EFEKTİNİ BAŞLAT
+
     const formData = new FormData();
     formData.append('name', name.trim());
     formData.append('price', price);
     formData.append('category', category);
     formData.append('quantity', 1);
-    
-    // 📸 Eğer kullanıcı fotoğraf seçtiyse onu da kargoya ekle!
-    if (image) {
-      formData.append('image', image); 
-    }
+    if (image) formData.append('image', image); 
 
     try {
       const res = await fetch(`${API_URL}/items`, {
         method: 'POST',
-        headers: { 
-          'Authorization': `Bearer ${token}`
-          // DİKKAT: Fotoğraf yollarken 'Content-Type': 'application/json' YAZILMAZ! 
-          // Tarayıcı bunun kargo (FormData) olduğunu kendi anlar.
-        },
-        body: formData // Kargo paketini yolla
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData 
       });
       
       if (res.ok) {
         const newItem = await res.json();
-        setItems([newItem, ...items]); // Yeni ürünü listeye ekle
+        setItems([newItem, ...items]); 
         setName("");
         setPrice("");
-        setImage(null); // Hafızadaki fotoğrafı temizle
-        document.getElementById('fileInput').value = ""; // Seçim kutusunu temizle
+        setImage(null); 
+        document.getElementById('fileInput').value = ""; 
       }
     } catch (err) {
       console.error("Ekleme hatası:", err);
+    } finally {
+      setIsAdding(false); // YÜKLEME BİTİNCE EFEKTİ DURDUR
     }
   };
 
-  // ==========================================
-  // 4. VERİTABANINDAN ÜRÜN SİLME
-  // ==========================================
   const handleDelete = async (id) => {
     try {
       const res = await fetch(`${API_URL}/items/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      
-      if (res.ok) {
-        setItems(items.filter(item => item._id !== id));
-      }
-    } catch (err) {
-      console.error("Silme hatası:", err);
-    }
+      if (res.ok) setItems(items.filter(item => item._id !== id));
+    } catch (err) { console.error("Silme hatası:", err); }
   };
 
-  // ==========================================
-  // 5. FAVORİ GÜNCELLEME (PUT)
-  // ==========================================
   const toggleFavorite = async (item) => {
     try {
       const res = await fetch(`${API_URL}/items/${item._id}`, {
@@ -181,19 +194,13 @@ function App() {
         },
         body: JSON.stringify({ isFavorite: !item.isFavorite })
       });
-      
       if (res.ok) {
         const updated = await res.json();
         setItems(items.map(i => i._id === updated._id ? updated : i));
       }
-    } catch (err) {
-      console.error("Güncelleme hatası:", err);
-    }
+    } catch (err) { console.error("Güncelleme hatası:", err); }
   };
 
-  // ==========================================
-  // 6. FİLTRELEME VE HESAPLAMALAR
-  // ==========================================
   const filteredItems = items
     .filter(item => {
       const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -204,7 +211,7 @@ function App() {
       if (sortType === 'price-asc') return a.price - b.price;
       if (sortType === 'price-desc') return b.price - a.price;
       if (sortType === 'alpha-asc') return a.name.localeCompare(b.name);
-      return new Date(b.createdAt) - new Date(a.createdAt); // date-desc (Varsayılan)
+      return new Date(b.createdAt) - new Date(a.createdAt); 
     });
 
   const categoryTotals = items.reduce((acc, item) => {
@@ -218,7 +225,6 @@ function App() {
   // GÖRÜNÜM (UI) KISMI
   // ==========================================
   
-  // EĞER GİRİŞ YAPILMAMIŞSA (AUTH EKRANI)
   if (!token) {
     return (
       <div className="container">
@@ -251,7 +257,6 @@ function App() {
     );
   }
 
-  // EĞER GİRİŞ YAPILMIŞSA (ANA UYGULAMA EKRANI)
   return (
     <div className="container">
     <header>
@@ -291,10 +296,12 @@ function App() {
             type="number" placeholder="Fiyat" required
             value={price} onChange={e => setPrice(e.target.value)}
           />
-          <button id="addBtn">Ekle</button>
+          {/* YENİ: YÜKLENİYOR DURUMUNDA BUTON RENGİ VE YAZISI DEĞİŞİR */}
+          <button id="addBtn" disabled={isAdding} style={{ opacity: isAdding ? 0.7 : 1 }}>
+            {isAdding ? "⏳" : "Ekle"}
+          </button>
         </div>
         
-        {/* YENİ: FOTOĞRAF SEÇME KUTUSU */}
         <div className="file-input-container">
           <input 
             type="file" id="fileInput" accept="image/*" 
@@ -303,7 +310,30 @@ function App() {
         </div>
       </form>
 
-      <div className="toolbar">
+      {/* ================= YENİ: ORTAK EKLEME BÖLÜMÜ ================= */}
+      <div className="toolbar" style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '10px', marginTop: '10px' }}>
+        <form onSubmit={handleShare} style={{ display: 'flex', width: '100%', gap: '10px', alignItems: 'center' }}>
+          <span style={{ fontSize: '1.2rem' }}>🤝</span>
+          <input 
+            type="email" 
+            placeholder="Arkadaşının Emailini Gir..." 
+            value={partnerEmail} 
+            onChange={e => setPartnerEmail(e.target.value)}
+            style={{ flex: 1, margin: 0 }}
+          />
+          <button type="submit" className="fav-filter-btn" style={{ padding: '8px 15px' }}>
+            Ortak Ekle
+          </button>
+        </form>
+        {shareMessage && (
+          <div style={{ width: '100%', textAlign: 'center', marginTop: '5px', fontSize: '0.9rem', color: shareMessage.includes('✅') ? '#2ecc71' : '#ff4757' }}>
+            {shareMessage}
+          </div>
+        )}
+      </div>
+      {/* ============================================================== */}
+
+      <div className="toolbar" style={{ marginTop: '10px' }}>
         <input 
           type="text" placeholder="🔍 Ara..." 
           value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
@@ -326,7 +356,6 @@ function App() {
         {filteredItems.map(item => (
           <li key={item._id} className={item.isFavorite ? "fav-item" : ""}>
             <div className="item-info">
-              {/* EĞER FOTOĞRAF VARSA GÖSTER, YOKSA BOŞ BIRAK */}
               {item.imageUrl && (
                 <img src={item.imageUrl} alt={item.name} className="item-image" />
               )}
