@@ -27,6 +27,7 @@ function App() {
   const [items, setItems] = useState([]);
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
+  const [image, setImage] = useState(null); // 📸 Fotoğraf state'i
   const [category, setCategory] = useState("Genel");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortType, setSortType] = useState("date-desc");
@@ -106,21 +107,34 @@ function App() {
     fetchItems();
   }, [token]);
 
-  // ==========================================
-  // 3. VERİTABANINA ÜRÜN EKLEME
+ // ==========================================
+  // 3. VERİTABANINA ÜRÜN VE FOTOĞRAF EKLEME
   // ==========================================
   const handleAdd = async (e) => {
     e.preventDefault();
     if (!name.trim() || price <= 0) return;
 
+    // 📦 DOSYA GÖNDERMEK İÇİN ÖZEL KARGO PAKETİ (FormData)
+    const formData = new FormData();
+    formData.append('name', name.trim());
+    formData.append('price', price);
+    formData.append('category', category);
+    formData.append('quantity', 1);
+    
+    // 📸 Eğer kullanıcı fotoğraf seçtiyse onu da kargoya ekle!
+    if (image) {
+      formData.append('image', image); 
+    }
+
     try {
       const res = await fetch(`${API_URL}/items`, {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
+          // DİKKAT: Fotoğraf yollarken 'Content-Type': 'application/json' YAZILMAZ! 
+          // Tarayıcı bunun kargo (FormData) olduğunu kendi anlar.
         },
-        body: JSON.stringify({ name: name.trim(), price: parseFloat(price), category, quantity: 1 })
+        body: formData // Kargo paketini yolla
       });
       
       if (res.ok) {
@@ -128,6 +142,8 @@ function App() {
         setItems([newItem, ...items]); // Yeni ürünü listeye ekle
         setName("");
         setPrice("");
+        setImage(null); // Hafızadaki fotoğrafı temizle
+        document.getElementById('fileInput').value = ""; // Seçim kutusunu temizle
       }
     } catch (err) {
       console.error("Ekleme hatası:", err);
@@ -253,28 +269,38 @@ function App() {
         </div>
       </header>
       
-      <form onSubmit={handleAdd} className="input-group">
-        <input 
-          type="text" list="productSuggestions" placeholder="Ürün adı..." required
-          value={name} onChange={e => setName(e.target.value)}
-        />
-        <datalist id="productSuggestions">
-          {commonProducts.map((p, i) => <option key={i} value={p} />)}
-        </datalist>
+      <form onSubmit={handleAdd} style={{display: 'flex', flexDirection: 'column'}}>
+        <div className="input-group" style={{marginBottom: '0'}}>
+          <input 
+            type="text" list="productSuggestions" placeholder="Ürün adı..." required
+            value={name} onChange={e => setName(e.target.value)}
+          />
+          <datalist id="productSuggestions">
+            {commonProducts.map((p, i) => <option key={i} value={p} />)}
+          </datalist>
 
-        <select value={category} onChange={e => setCategory(e.target.value)}>
-          <option>Genel</option>
-          <option>Gıda</option>
-          <option>Temizlik</option>
-          <option>Teknoloji</option>
-          <option>Giyim</option>
-        </select>
+          <select value={category} onChange={e => setCategory(e.target.value)}>
+            <option>Genel</option>
+            <option>Gıda</option>
+            <option>Temizlik</option>
+            <option>Teknoloji</option>
+            <option>Giyim</option>
+          </select>
+          
+          <input 
+            type="number" placeholder="Fiyat" required
+            value={price} onChange={e => setPrice(e.target.value)}
+          />
+          <button id="addBtn">Ekle</button>
+        </div>
         
-        <input 
-          type="number" placeholder="Fiyat" required
-          value={price} onChange={e => setPrice(e.target.value)}
-        />
-        <button id="addBtn">Ekle</button>
+        {/* YENİ: FOTOĞRAF SEÇME KUTUSU */}
+        <div className="file-input-container">
+          <input 
+            type="file" id="fileInput" accept="image/*" 
+            onChange={e => setImage(e.target.files[0])} 
+          />
+        </div>
       </form>
 
       <div className="toolbar">
@@ -300,8 +326,14 @@ function App() {
         {filteredItems.map(item => (
           <li key={item._id} className={item.isFavorite ? "fav-item" : ""}>
             <div className="item-info">
-              <span className="category-badge">{item.category}</span>
-              <span className="item-name">{item.name}</span>
+              {/* EĞER FOTOĞRAF VARSA GÖSTER, YOKSA BOŞ BIRAK */}
+              {item.imageUrl && (
+                <img src={item.imageUrl} alt={item.name} className="item-image" />
+              )}
+              <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
+                <span className="category-badge">{item.category}</span>
+                <span className="item-name">{item.name}</span>
+              </div>
             </div>
             
             <div className="actions">

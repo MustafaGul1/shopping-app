@@ -578,3 +578,36 @@ body.dark-mode .cat-stat {
 body.dark-mode .clear-btn-text {
   color: #bbb;
 }
+/* --- YENİ EKLENEN: ÜRÜN FOTOĞRAFI STİLLERİ --- */
+.item-image {
+  width: 55px;
+  height: 55px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 12px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  border: 2px solid #eee;
+}
+
+body.dark-mode .item-image {
+  border-color: #444;
+}
+
+.file-input-container {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.file-input-container input[type="file"] {
+  width: 100%;
+  padding: 8px;
+  font-size: 0.9rem;
+  background-color: #f8f9fa !important;
+  border: 1px dashed #ccc;
+}
+
+body.dark-mode .file-input-container input[type="file"] {
+  background-color: #333 !important;
+  border-color: #555;
+  color: #fff !important;
+}
