@@ -12,10 +12,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
 const app = express();
-
-// RENDER KALKANI İÇİN İZİN
 app.set('trust proxy', 1);
-
 app.use(helmet()); 
 
 const apiLimiter = rateLimit({
@@ -36,12 +33,13 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.error('❌ Bağlantı Hatası:', err.message));
 
 // ==========================================
-// 👤 KULLANICI ŞEMASI
+// 👤 KULLANICI ŞEMASI (ORTAKLAR EKLENDİ 🤝)
 // ==========================================
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   passwordHash: { type: String, required: true },
+  sharedWith: [{ type: String }], // YENİ: Ortakların ID'lerini burada tutacağız
   createdAt: { type: Date, default: Date.now }
 });
 const User = mongoose.model('User', userSchema);
@@ -60,9 +58,7 @@ app.post('/api/auth/register', async (req, res, next) => {
 
     const newUser = await User.create({ name, email, passwordHash: hashedPassword });
     res.status(201).json({ message: 'Kayıt başarılı!', userId: newUser._id });
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 });
 
 app.post('/api/auth/login', async (req, res, next) => {
@@ -76,9 +72,7 @@ app.post('/api/auth/login', async (req, res, next) => {
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.json({ message: 'Giriş başarılı!', token, user: { id: user._id, name: user.name, email: user.email }});
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 });
 
 const verifyToken = (req, res, next) => {
@@ -90,10 +84,39 @@ const verifyToken = (req, res, next) => {
     const verified = jwt.verify(token, process.env.JWT_SECRET);
     req.user = verified;
     next();
-  } catch (err) {
-    res.status(400).json({ error: 'Geçersiz bilet!' });
-  }
+  } catch (err) { res.status(400).json({ error: 'Geçersiz bilet!' }); }
 };
+
+// ==========================================
+// 🤝 YENİ: ORTAK EKLEME API'Sİ
+// ==========================================
+app.post('/api/share', verifyToken, async (req, res, next) => {
+  try {
+    const { partnerEmail } = req.body;
+    
+    // Arkadaşımızı veritabanında bulalım
+    const partner = await User.findOne({ email: partnerEmail });
+    if (!partner) return res.status(404).json({ error: "Bu e-posta ile kayıtlı kullanıcı bulunamadı!" });
+
+    if (partner._id.toString() === req.user.userId) return res.status(400).json({ error: "Kendinizle paylaşamazsınız!" });
+
+    const me = await User.findById(req.user.userId);
+
+    // Eğer daha önce eklenmemişse, birbirimizi ortak olarak ekleyelim
+    if (!me.sharedWith.includes(partner._id.toString())) {
+      me.sharedWith.push(partner._id.toString());
+      await me.save();
+
+      // Karşı tarafın listesine de beni ekle (Karşılıklı bağlantı)
+      if (!partner.sharedWith.includes(me._id.toString())) {
+        partner.sharedWith.push(me._id.toString());
+        await partner.save();
+      }
+    }
+    
+    res.json({ message: "Liste başarıyla paylaşıldı!" });
+  } catch (err) { next(err); }
+});
 
 // ==========================================
 // 📦 ÜRÜN ŞEMASI VE FOTOĞRAF AYARLARI
@@ -106,10 +129,7 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: {
-    folder: 'shopping-app-images',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp']
-  }
+  params: { folder: 'shopping-app-images', allowed_formats: ['jpg', 'jpeg', 'png', 'webp'] }
 });
 const upload = multer({ storage: storage });
 
@@ -125,23 +145,22 @@ const itemSchema = new mongoose.Schema({
 });
 const Item = mongoose.model('Item', itemSchema);
 
+// GET: Sadece benim değil, ortaklarımın ürünlerini de getir
 app.get('/api/items', verifyToken, async (req, res, next) => {
   try {
-    const items = await Item.find({ userId: req.user.userId }).sort({ createdAt: -1 });
+    const me = await User.findById(req.user.userId);
+    const allowedUserIds = [req.user.userId, ...me.sharedWith]; // Ben + Ortaklarım
+
+    const items = await Item.find({ userId: { $in: allowedUserIds } }).sort({ createdAt: -1 });
     res.json(items);
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 });
 
 app.post('/api/items', verifyToken, upload.single('image'), async (req, res, next) => {
   try {
     const { name, price, category, quantity } = req.body; 
     let imageUrl = "";
-
-    if (req.file && req.file.path) {
-      imageUrl = req.file.path;
-    }
+    if (req.file && req.file.path) imageUrl = req.file.path;
 
     const newItem = await Item.create({
       userId: req.user.userId,
@@ -151,39 +170,39 @@ app.post('/api/items', verifyToken, upload.single('image'), async (req, res, nex
       quantity: quantity || 1,
       imageUrl: imageUrl
     });
-
     res.status(201).json(newItem);
-  } catch (err) {
-    next(err); // Hatayı en alttaki yakalayıcıya gönder
-  }
+  } catch (err) { next(err); }
 });
 
+// PUT & DELETE: Ortaklarımın ürünlerini silmeme ve düzenlememe izin ver
 app.put('/api/items/:id', verifyToken, async (req, res, next) => {
   try {
+    const me = await User.findById(req.user.userId);
+    const allowedUserIds = [req.user.userId, ...me.sharedWith];
+
     const updated = await Item.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user.userId }, 
+      { _id: req.params.id, userId: { $in: allowedUserIds } }, 
       req.body, 
-      { returnDocument: 'after' } // Uyarı vermemesi için güncellendi
+      { returnDocument: 'after' }
     );
-    if (!updated) return res.status(404).json({ error: 'Bulunamadı' });
+    if (!updated) return res.status(404).json({ error: 'Bulunamadı veya yetkiniz yok' });
     res.json(updated);
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 });
 
 app.delete('/api/items/:id', verifyToken, async (req, res, next) => {
   try {
-    const deleted = await Item.findOneAndDelete({ _id: req.params.id, userId: req.user.userId });
-    if (!deleted) return res.status(404).json({ error: 'Bulunamadı' });
+    const me = await User.findById(req.user.userId);
+    const allowedUserIds = [req.user.userId, ...me.sharedWith];
+
+    const deleted = await Item.findOneAndDelete({ _id: req.params.id, userId: { $in: allowedUserIds } });
+    if (!deleted) return res.status(404).json({ error: 'Bulunamadı veya yetkiniz yok' });
     res.json({ ok: true });
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 });
 
 // ==========================================
-// 🚨 GİZLİ HATALARI ÇEVİREN SİHİRLİ YAKALAYICI
+// 🚨 GİZLİ HATALARI ÇEVİREN YAKALAYICI
 // ==========================================
 app.use((err, req, res, next) => {
   console.error("💥 KESİN HATA SEBEBİ:", err.message || err);
