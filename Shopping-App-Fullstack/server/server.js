@@ -2,44 +2,21 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-
-// SİLİNEN KİMLİK DOĞRULAMA PAKETLERİ (Geri geldi!)
-const bcrypt = require('bcryptjs'); // Eğer sadece 'bcrypt' kurduysan burayı const bcrypt = require('bcrypt') yapabilirsin
+const bcrypt = require('bcryptjs'); 
 const jwt = require('jsonwebtoken');
 
-// CLOUDINARY VE MULTER PAKETLERİ
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
-
-// CLOUDINARY AYARLARI
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
-
-// FOTOĞRAFLARI BULUTA YÜKLEYECEK OLAN MOTOR
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'shopping-app-images',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp']
-  }
-});
-const upload = multer({ storage: storage });
-
-// GÜVENLİK PAKETLERİ
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
 const app = express();
 
-// RENDER PROXY'SİNE GÜVEN (Bu satırı ekliyoruz)
+// RENDER KALKANI İÇİN İZİN
 app.set('trust proxy', 1);
 
-// --- 🛡️ GÜVENLİK ZIRHLARI AKTİF ---
-app.use(helmet());
+app.use(helmet()); 
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
@@ -56,7 +33,7 @@ app.use(express.json());
 // ==========================================
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ MongoDB Bağlandı!'))
-  .catch(err => console.error('❌ Bağlantı Hatası:', err));
+  .catch(err => console.error('❌ Bağlantı Hatası:', err.message));
 
 // ==========================================
 // 👤 KULLANICI ŞEMASI
@@ -72,7 +49,7 @@ const User = mongoose.model('User', userSchema);
 // ==========================================
 // 🔐 AUTH (KAYIT VE GİRİŞ) API'LERİ
 // ==========================================
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
     const existingUser = await User.findOne({ email });
@@ -84,11 +61,11 @@ app.post('/api/auth/register', async (req, res) => {
     const newUser = await User.create({ name, email, passwordHash: hashedPassword });
     res.status(201).json({ message: 'Kayıt başarılı!', userId: newUser._id });
   } catch (err) {
-    res.status(500).json({ error: 'Kayıt hatası' });
+    next(err);
   }
 });
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
@@ -100,13 +77,10 @@ app.post('/api/auth/login', async (req, res) => {
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.json({ message: 'Giriş başarılı!', token, user: { id: user._id, name: user.name, email: user.email }});
   } catch (err) {
-    res.status(500).json({ error: 'Giriş hatası' });
+    next(err);
   }
 });
 
-// ==========================================
-// 🛡️ GÜVENLİK GÖREVLİSİ (MIDDLEWARE)
-// ==========================================
 const verifyToken = (req, res, next) => {
   const authHeader = req.header('Authorization');
   if (!authHeader) return res.status(401).json({ error: 'Erişim reddedildi!' });
@@ -122,8 +96,23 @@ const verifyToken = (req, res, next) => {
 };
 
 // ==========================================
-// 📦 ÜRÜN ŞEMASI VE KORUMALI API'LER
+// 📦 ÜRÜN ŞEMASI VE FOTOĞRAF AYARLARI
 // ==========================================
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'shopping-app-images',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp']
+  }
+});
+const upload = multer({ storage: storage });
+
 const itemSchema = new mongoose.Schema({
   userId: { type: String, required: true },
   name: { type: String, required: true },
@@ -136,16 +125,16 @@ const itemSchema = new mongoose.Schema({
 });
 const Item = mongoose.model('Item', itemSchema);
 
-app.get('/api/items', verifyToken, async (req, res) => {
+app.get('/api/items', verifyToken, async (req, res, next) => {
   try {
     const items = await Item.find({ userId: req.user.userId }).sort({ createdAt: -1 });
     res.json(items);
   } catch (err) {
-    res.status(500).json({ error: 'Hata' });
+    next(err);
   }
 });
 
-app.post('/api/items', verifyToken, upload.single('image'), async (req, res) => {
+app.post('/api/items', verifyToken, upload.single('image'), async (req, res, next) => {
   try {
     const { name, price, category, quantity } = req.body; 
     let imageUrl = "";
@@ -165,30 +154,40 @@ app.post('/api/items', verifyToken, upload.single('image'), async (req, res) => 
 
     res.status(201).json(newItem);
   } catch (err) {
-    console.error("Ekleme hatası:", err);
-    res.status(500).json({ error: 'Hata' });
+    next(err); // Hatayı en alttaki yakalayıcıya gönder
   }
 });
 
-// SİLİNEN FAVORİYE EKLEME (PUT) İŞLEMİ GERİ GELDİ!
-app.put('/api/items/:id', verifyToken, async (req, res) => {
+app.put('/api/items/:id', verifyToken, async (req, res, next) => {
   try {
-    const updated = await Item.findOneAndUpdate({ _id: req.params.id, userId: req.user.userId }, req.body, { new: true });
+    const updated = await Item.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user.userId }, 
+      req.body, 
+      { returnDocument: 'after' } // Uyarı vermemesi için güncellendi
+    );
     if (!updated) return res.status(404).json({ error: 'Bulunamadı' });
     res.json(updated);
   } catch (err) {
-    res.status(500).json({ error: 'Hata' });
+    next(err);
   }
 });
 
-app.delete('/api/items/:id', verifyToken, async (req, res) => {
+app.delete('/api/items/:id', verifyToken, async (req, res, next) => {
   try {
     const deleted = await Item.findOneAndDelete({ _id: req.params.id, userId: req.user.userId });
     if (!deleted) return res.status(404).json({ error: 'Bulunamadı' });
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: 'Hata' });
+    next(err);
   }
+});
+
+// ==========================================
+// 🚨 GİZLİ HATALARI ÇEVİREN SİHİRLİ YAKALAYICI
+// ==========================================
+app.use((err, req, res, next) => {
+  console.error("💥 KESİN HATA SEBEBİ:", err.message || err);
+  res.status(500).json({ error: err.message || 'Sunucu hatası' });
 });
 
 const PORT = process.env.PORT || 5000;
