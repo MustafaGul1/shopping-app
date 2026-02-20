@@ -34,6 +34,9 @@ function App() {
 
   
 
+// 🔴 RENDER BACKEND LİNKİMİZ (Bunu kazara silmişiz!)
+  const API_URL = "https://shopping-backend-x3jp.onrender.com/api";
+
   const commonProducts = [
     "Süt", "Ekmek", "Yumurta", "Peynir", "Yoğurt", "Domates", 
     "Salatalık", "Elma", "Muz", "Çay", "Kahve", "Şeker", 
