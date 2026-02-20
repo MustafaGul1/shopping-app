@@ -7,6 +7,22 @@ function App() {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [authForm, setAuthForm] = useState({ name: '', email: '', password: '' });
 
+  // --- TEMA (DARK MODE) STATE'İ ---
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem('darkMode') === 'true';
+  });
+
+  // Tema değiştiğinde Body'e class ekle ve hafızaya kaydet
+  useEffect(() => {
+    if (isDarkMode) {
+      document.body.classList.add('dark-mode');
+      localStorage.setItem('darkMode', 'true');
+    } else {
+      document.body.classList.remove('dark-mode');
+      localStorage.setItem('darkMode', 'false');
+    }
+  }, [isDarkMode]);
+
   // --- ÜRÜN STATE'LERİ ---
   const [items, setItems] = useState([]);
   const [name, setName] = useState("");
@@ -219,11 +235,21 @@ function App() {
   // EĞER GİRİŞ YAPILMIŞSA (ANA UYGULAMA EKRANI)
   return (
     <div className="container">
-      <header>
+    <header>
         <h2>🛒 React Pro Listesi</h2>
-        <button className="clear-btn-text" onClick={handleLogout} title="Çıkış Yap">🚪 Çıkış</button>
+        <div style={{display: 'flex', gap: '15px', alignItems: 'center'}}>
+          <button 
+            className="clear-btn-text" 
+            onClick={() => setIsDarkMode(!isDarkMode)} 
+            title="Temayı Değiştir"
+            style={{fontSize: '1.2rem', textDecoration: 'none'}}
+          >
+            {isDarkMode ? "☀️" : "🌙"}
+          </button>
+          <button className="clear-btn-text" onClick={handleLogout} title="Çıkış Yap">🚪 Çıkış</button>
+        </div>
       </header>
-
+      
       <form onSubmit={handleAdd} className="input-group">
         <input 
           type="text" list="productSuggestions" placeholder="Ürün adı..." required

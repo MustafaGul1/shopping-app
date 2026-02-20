@@ -255,6 +255,7 @@ li.fav-item {
 
 .bin-bottom {
   width: 14px;
+
   position: absolute;
   top: 13px;
   z-index: 1;
@@ -518,4 +519,62 @@ li.fav-item { border-left-color: #d32f2f; background-color: #fff5f5; }
   .input-group input[type="text"] { flex: 100%; }
   .input-group select { flex: 1; }
   #addBtn { width: 100%; margin-top: 5px; }
+}
+/* ==========================================
+   🌙 KARANLIK MOD (DARK MODE) TASARIMI
+   ========================================== */
+body.dark-mode {
+  background: linear-gradient(135deg, #1f1c2c 0%, #928DAB 100%);
+  color: #eee;
+}
+
+body.dark-mode .container {
+  background-color: rgba(30, 30, 30, 0.95);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+}
+
+body.dark-mode h2, 
+body.dark-mode .price-tag, 
+body.dark-mode .grand-total,
+body.dark-mode .cat-stat strong {
+  color: #fff;
+}
+
+/* Karanlık Modda Girdiler (Input/Select) */
+body.dark-mode input, 
+body.dark-mode select {
+  background-color: #2c2c2c !important;
+  color: #fff !important;
+  border-color: #444;
+}
+
+body.dark-mode option {
+  background-color: #2c2c2c !important;
+  color: #fff !important;
+}
+
+/* Karanlık Modda Liste Elemanları */
+body.dark-mode li {
+  background-color: #2c2c2c;
+  border-left-color: #00b09b;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+body.dark-mode li.fav-item {
+  background-color: #3a2022; /* Hafif koyu kırmızımsı */
+  border-left-color: #ff4757;
+}
+
+body.dark-mode .category-badge {
+  background: #1a423e;
+  color: #4db6ac;
+}
+
+body.dark-mode .cat-stat {
+  background: #444;
+  color: #ddd;
+}
+
+body.dark-mode .clear-btn-text {
+  color: #bbb;
 }
