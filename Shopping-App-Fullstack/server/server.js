@@ -127,7 +127,7 @@ app.get('/api/items', verifyToken, async (req, res, next) => {
 });
 
 // ==========================================
-// 🚀 ZIRHLANDIRILMIŞ AI LİSTE OLUŞTURUCU (GEMINI 2.0 FLASH)
+// 🚀 ZIRHLANDIRILMIŞ AI LİSTE OLUŞTURUCU (GEMINI 3.1 PRO PREVIEW)
 // ==========================================
 app.post('/api/items/ai-generate', verifyToken, async (req, res, next) => {
   try {
@@ -147,8 +147,8 @@ app.post('/api/items/ai-generate', verifyToken, async (req, res, next) => {
       }
     `;
 
-    // 🔥 GÜNCELLEME: Google'ın resmi API modeli olan gemini-2.0-flash kullanıyoruz!
-    const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+    // 🔥 GÜNCELLEME: Senin isteğin üzerine en son çıkan gemini-3.1-pro-preview modelini kullanıyoruz!
+    const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${process.env.GEMINI_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
@@ -158,7 +158,8 @@ app.post('/api/items/ai-generate', verifyToken, async (req, res, next) => {
 
     if (!aiData.candidates) {
       console.error("🛑 GOOGLE'DAN GELEN GİZLİ HATA:", JSON.stringify(aiData, null, 2));
-      return res.status(500).json({ error: "Google API modeli yanıt vermedi. Lütfen tekrar deneyin." });
+      // Hata mesajını sana (ön yüze) yönlendirdik ki Render'a girmeden bilelim!
+      return res.status(500).json({ error: "Lütfen Render Loglarına Bakın! Google'dan dönen hata: " + (aiData.error?.message || "Bilinmiyor") });
     }
 
     let aiText = aiData.candidates[0].content.parts[0].text.trim();
@@ -196,7 +197,8 @@ app.post('/api/items', verifyToken, upload.single('image'), async (req, res, nex
     
     if (process.env.GEMINI_API_KEY) {
       try {
-        const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+        // 🔥 GÜNCELLEME: Tekli tahminler için de gemini-3.1-pro-preview modelini kullanıyoruz!
+        const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${process.env.GEMINI_API_KEY}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ contents: [{ parts: [{ text: `Kategoriyi tahmin et: "${name}". Sadece BİRİNİ yaz: Gıda, Temizlik, Teknoloji, Giyim, Genel.` }] }] })
