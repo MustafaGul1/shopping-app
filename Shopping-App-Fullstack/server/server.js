@@ -45,10 +45,8 @@ app.post('/api/auth/register', async (req, res, next) => {
     const { name, email, password } = req.body;
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ error: 'Bu email zaten kullanılıyor!' });
-
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = bcrypt.hashSync(password, salt);
-
     const newUser = await User.create({ name, email, passwordHash: hashedPassword });
     res.status(201).json({ message: 'Kayıt başarılı!', userId: newUser._id });
   } catch (err) { next(err); }
@@ -59,10 +57,8 @@ app.post('/api/auth/login', async (req, res, next) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (!user) return res.status(401).json({ error: 'Kullanıcı bulunamadı!' });
-
     const isPasswordCorrect = bcrypt.compareSync(password, user.passwordHash);
     if (!isPasswordCorrect) return res.status(401).json({ error: 'Şifre hatalı!' });
-
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.json({ message: 'Giriş başarılı!', token, user: { id: user._id, name: user.name, email: user.email }});
   } catch (err) { next(err); }
@@ -85,7 +81,6 @@ app.post('/api/share', verifyToken, async (req, res, next) => {
     const partner = await User.findOne({ email: partnerEmail });
     if (!partner) return res.status(404).json({ error: "Bu e-posta ile kayıtlı kullanıcı bulunamadı!" });
     if (partner._id.toString() === req.user.userId) return res.status(400).json({ error: "Kendinizle paylaşamazsınız!" });
-
     const me = await User.findById(req.user.userId);
     if (!me.sharedWith.includes(partner._id.toString())) {
       me.sharedWith.push(partner._id.toString());
@@ -132,7 +127,7 @@ app.get('/api/items', verifyToken, async (req, res, next) => {
 });
 
 // ==========================================
-// 🚀 BÜYÜK FİNAL: CÜMLEDEN TOPLU LİSTE OLUŞTURAN AI
+// 🚀 ZIRHLANDIRILMIŞ AI LİSTE OLUŞTURUCU
 // ==========================================
 app.post('/api/items/ai-generate', verifyToken, async (req, res, next) => {
   try {
@@ -141,15 +136,14 @@ app.post('/api/items/ai-generate', verifyToken, async (req, res, next) => {
     
     console.log(`🤖 AI Toplu Liste Düşünüyor: "${prompt}"`);
 
-    // SİHİRLİ KOMUTUMUZ (PROMPT ENGINEERING)
     const systemPrompt = `
       Sen bir alışveriş asistanısın. Kullanıcının şu cümlesinden gereken tüm malzemeleri çıkar: "${prompt}"
       Bana SADECE geçerli bir JSON dizisi (array) döndür. Başka hiçbir açıklama veya markdown işareti kullanma.
       Her ürün objesi şu formatta olmalı:
       {
         "name": "Ürün Adı",
-        "category": "Gıda", // Sadece şunlardan biri: Gıda, Temizlik, Teknoloji, Giyim, Genel
-        "price": 50 // Tahmini ortalama bir fiyat (Sadece Sayı olmalı)
+        "category": "Gıda", 
+        "price": 50 
       }
     `;
 
@@ -160,16 +154,20 @@ app.post('/api/items/ai-generate', verifyToken, async (req, res, next) => {
     });
 
     const aiData = await aiResponse.json();
+
+    // 🛡️ YENİ KALKAN: Eğer Google bize hata mesajı atarsa çökme, hatayı ekrana yazdır!
+    if (!aiData.candidates) {
+      console.error("🛑 GOOGLE'DAN GELEN GİZLİ HATA:", JSON.stringify(aiData, null, 2));
+      return res.status(500).json({ error: "Google API Anahtarınızda (API KEY) bir sorun var. Lütfen Render Environment değişkenlerini kontrol edin." });
+    }
+
     let aiText = aiData.candidates[0].content.parts[0].text.trim();
 
-    // AI bazen inat edip ```json yazarak döner, onu temizliyoruz
     if (aiText.startsWith('```json')) aiText = aiText.substring(7, aiText.length - 3).trim();
     else if (aiText.startsWith('```')) aiText = aiText.substring(3, aiText.length - 3).trim();
 
-    // AI'nın verdiği metni gerçek bir JavaScript verisine çeviriyoruz
     const itemsArray = JSON.parse(aiText);
 
-    // Gelen ürünleri veritabanı formatımıza uyarlayıp hazırlıyoruz
     const itemsToInsert = itemsArray.map(item => ({
       userId: req.user.userId,
       name: item.name,
@@ -179,17 +177,15 @@ app.post('/api/items/ai-generate', verifyToken, async (req, res, next) => {
       imageUrl: ""
     }));
 
-    // SİHİR: Hepsini tek seferde veritabanına kaydet!
     const newItems = await Item.insertMany(itemsToInsert);
-    
     res.status(201).json(newItems);
+
   } catch (err) {
-    console.error("❌ AI Kafa Karışıklığı Yaşadı:", err);
+    console.error("❌ JSON Parse veya Kayıt Hatası:", err);
     res.status(500).json({ error: "Yapay zeka listeyi oluşturamadı, cümleyi değiştirip tekrar deneyin." });
   }
 });
 
-// (Eski tekli ürün ekleme API'si aynen duruyor)
 app.post('/api/items', verifyToken, upload.single('image'), async (req, res, next) => {
   try {
     const { name, price, quantity, category } = req.body; 
@@ -197,20 +193,7 @@ app.post('/api/items', verifyToken, upload.single('image'), async (req, res, nex
     if (req.file && req.file.path) imageUrl = req.file.path;
 
     let finalCategory = category || "Genel"; 
-    if (process.env.GEMINI_API_KEY) {
-      try {
-        const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: `Kategoriyi tahmin et: "${name}". Sadece BİRİNİ yaz: Gıda, Temizlik, Teknoloji, Giyim, Genel.` }] }] })
-        });
-        const aiData = await aiResponse.json();
-        const predictedCategory = aiData.candidates[0].content.parts[0].text.trim();
-        const validCategories = ["Gıda", "Temizlik", "Teknoloji", "Giyim", "Genel"];
-        if (validCategories.includes(predictedCategory)) finalCategory = predictedCategory;
-      } catch (aiErr) { console.log("Tekli AI tahmini atlandı."); }
-    }
-
+    
     const newItem = await Item.create({
       userId: req.user.userId,
       name,
