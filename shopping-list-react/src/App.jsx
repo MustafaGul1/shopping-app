@@ -22,7 +22,7 @@ function App() {
     }
   }, [isDarkMode]);
 
-  // --- ÜRÜN VE YÜKLEME (LOADING) STATE'LERİ ---
+  // --- ÜRÜN VE YÜKLEME STATE'LERİ ---
   const [items, setItems] = useState([]);
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
@@ -31,13 +31,15 @@ function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortType, setSortType] = useState("date-desc");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  
-  // YENİ: Yükleniyor efekti için State
   const [isAdding, setIsAdding] = useState(false); 
 
-  // YENİ: Ortak Ekleme için State'ler
+  // --- ORTAK EKLEME STATE'LERİ ---
   const [partnerEmail, setPartnerEmail] = useState("");
   const [shareMessage, setShareMessage] = useState("");
+
+  // 🤖 YENİ: YAPAY ZEKA STATE'LERİ
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [isAiLoading, setIsAiLoading] = useState(false);
 
   const API_URL = "https://shopping-backend-x3jp.onrender.com/api";
 
@@ -105,7 +107,7 @@ function App() {
   }, [token]);
 
   // ==========================================
-  // 🤝 3. YENİ: ORTAK EKLEME (PAYLAŞIM) İŞLEMİ
+  // 🤝 3. ORTAK EKLEME (PAYLAŞIM) İŞLEMİ
   // ==========================================
   const handleShare = async (e) => {
     e.preventDefault();
@@ -125,8 +127,8 @@ function App() {
       if (res.ok) {
         setShareMessage("✅ Başarıyla eklendi!");
         setPartnerEmail("");
-        fetchItems(); // Ortak eklenince listeyi hemen yenile ki onun ürünleri de gelsin!
-        setTimeout(() => setShareMessage(""), 3000); // 3 saniye sonra mesajı gizle
+        fetchItems(); 
+        setTimeout(() => setShareMessage(""), 3000); 
       } else {
         setShareMessage(`❌ Hata: ${data.error}`);
         setTimeout(() => setShareMessage(""), 3000);
@@ -137,13 +139,48 @@ function App() {
   };
 
   // ==========================================
-  // 4. VERİTABANINA ÜRÜN VE FOTOĞRAF EKLEME
+  // 🤖 4. YENİ: YAPAY ZEKAYA CÜMLE GÖNDERME
+  // ==========================================
+  const handleAiGenerate = async (e) => {
+    e.preventDefault();
+    if (!aiPrompt.trim()) return;
+
+    setIsAiLoading(true); // Yükleniyor animasyonunu başlat
+
+    try {
+      const res = await fetch(`${API_URL}/items/ai-generate`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ prompt: aiPrompt })
+      });
+      
+      if (res.ok) {
+        const newAiItems = await res.json();
+        setItems([...newAiItems, ...items]); // Gelen listeyi eskinin üstüne ekle
+        setAiPrompt(""); // Kutuyu temizle
+      } else {
+        const errData = await res.json();
+        alert("AI Hatası: " + errData.error);
+      }
+    } catch (err) {
+      alert("Yapay zeka asistanına şu an ulaşılamıyor.");
+      console.error(err);
+    } finally {
+      setIsAiLoading(false); // Yükleniyor animasyonunu durdur
+    }
+  };
+
+  // ==========================================
+  // 5. TEKLİ ÜRÜN VE FOTOĞRAF EKLEME
   // ==========================================
   const handleAdd = async (e) => {
     e.preventDefault();
     if (!name.trim() || price <= 0) return;
 
-    setIsAdding(true); // YÜKLENİYOR EFEKTİNİ BAŞLAT
+    setIsAdding(true); 
 
     const formData = new FormData();
     formData.append('name', name.trim());
@@ -167,13 +204,13 @@ function App() {
         setImage(null); 
         document.getElementById('fileInput').value = ""; 
       }
-    } catch (err) {
-      console.error("Ekleme hatası:", err);
-    } finally {
-      setIsAdding(false); // YÜKLEME BİTİNCE EFEKTİ DURDUR
-    }
+    } catch (err) { console.error("Ekleme hatası:", err); } 
+    finally { setIsAdding(false); }
   };
 
+  // ==========================================
+  // 6. SİLME VE FAVORİ İŞLEMLERİ
+  // ==========================================
   const handleDelete = async (id) => {
     try {
       const res = await fetch(`${API_URL}/items/${id}`, {
@@ -259,7 +296,7 @@ function App() {
 
   return (
     <div className="container">
-    <header>
+      <header>
         <h2>🛒 React Pro Listesi</h2>
         <div style={{display: 'flex', gap: '15px', alignItems: 'center'}}>
           <button 
@@ -273,11 +310,35 @@ function App() {
           <button className="clear-btn-text" onClick={handleLogout} title="Çıkış Yap">🚪 Çıkış</button>
         </div>
       </header>
+
+      {/* ================= 🤖 YENİ: AI ASİSTAN KUTUSU ================= */}
+      <div className="ai-box" style={{ backgroundColor: 'rgba(29, 209, 161, 0.1)', border: '1px solid #1dd1a1', padding: '15px', borderRadius: '10px', marginBottom: '20px' }}>
+        <h4 style={{ margin: '0 0 10px 0', color: '#1dd1a1', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          ✨ AI Alışveriş Asistanı
+        </h4>
+        <form onSubmit={handleAiGenerate} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <textarea 
+            placeholder="Ne planlıyorsun? (Örn: Akşama 4 kişilik lahmacun ve çoban salata yapacağım, evde hiçbir malzeme yok...)"
+            value={aiPrompt}
+            onChange={e => setAiPrompt(e.target.value)}
+            rows="3"
+            style={{ width: '100%', padding: '10px', borderRadius: '8px', border: 'none', resize: 'none' }}
+          />
+          <button 
+            type="submit" 
+            disabled={isAiLoading}
+            style={{ backgroundColor: '#1dd1a1', color: 'white', border: 'none', padding: '10px', borderRadius: '8px', cursor: isAiLoading ? 'wait' : 'pointer', fontWeight: 'bold' }}
+          >
+            {isAiLoading ? "⏳ AI Listenizi Hazırlıyor..." : "🪄 Sihirli Listeyi Oluştur"}
+          </button>
+        </form>
+      </div>
+      {/* ============================================================== */}
       
       <form onSubmit={handleAdd} style={{display: 'flex', flexDirection: 'column'}}>
         <div className="input-group" style={{marginBottom: '0'}}>
           <input 
-            type="text" list="productSuggestions" placeholder="Ürün adı..." required
+            type="text" list="productSuggestions" placeholder="Ürün adı (Tekli Ekle)..." required
             value={name} onChange={e => setName(e.target.value)}
           />
           <datalist id="productSuggestions">
@@ -296,7 +357,6 @@ function App() {
             type="number" placeholder="Fiyat" required
             value={price} onChange={e => setPrice(e.target.value)}
           />
-          {/* YENİ: YÜKLENİYOR DURUMUNDA BUTON RENGİ VE YAZISI DEĞİŞİR */}
           <button id="addBtn" disabled={isAdding} style={{ opacity: isAdding ? 0.7 : 1 }}>
             {isAdding ? "⏳" : "Ekle"}
           </button>
@@ -310,7 +370,7 @@ function App() {
         </div>
       </form>
 
-      {/* ================= YENİ: ORTAK EKLEME BÖLÜMÜ ================= */}
+      {/* ================= ORTAK EKLEME BÖLÜMÜ ================= */}
       <div className="toolbar" style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '10px', marginTop: '10px' }}>
         <form onSubmit={handleShare} style={{ display: 'flex', width: '100%', gap: '10px', alignItems: 'center' }}>
           <span style={{ fontSize: '1.2rem' }}>🤝</span>
@@ -331,7 +391,6 @@ function App() {
           </div>
         )}
       </div>
-      {/* ============================================================== */}
 
       <div className="toolbar" style={{ marginTop: '10px' }}>
         <input 
