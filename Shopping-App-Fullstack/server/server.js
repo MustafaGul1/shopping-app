@@ -147,7 +147,8 @@ app.post('/api/items/ai-generate', verifyToken, async (req, res, next) => {
       }
     `;
 
-    const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+    // 🔥 DÜZELTME BURADA: "gemini-1.5-flash-latest" kullanıyoruz!
+    const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
@@ -155,10 +156,9 @@ app.post('/api/items/ai-generate', verifyToken, async (req, res, next) => {
 
     const aiData = await aiResponse.json();
 
-    // 🛡️ YENİ KALKAN: Eğer Google bize hata mesajı atarsa çökme, hatayı ekrana yazdır!
     if (!aiData.candidates) {
       console.error("🛑 GOOGLE'DAN GELEN GİZLİ HATA:", JSON.stringify(aiData, null, 2));
-      return res.status(500).json({ error: "Google API Anahtarınızda (API KEY) bir sorun var. Lütfen Render Environment değişkenlerini kontrol edin." });
+      return res.status(500).json({ error: "Google API modeli yanıt vermedi. Lütfen tekrar deneyin." });
     }
 
     let aiText = aiData.candidates[0].content.parts[0].text.trim();
