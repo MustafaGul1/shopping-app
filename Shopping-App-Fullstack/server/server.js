@@ -21,7 +21,6 @@ const apiLimiter = rateLimit({
   message: "Çok fazla istek attınız, lütfen daha sonra tekrar deneyin."
 });
 app.use('/api/', apiLimiter); 
-
 app.use(cors());
 app.use(express.json());
 
@@ -32,21 +31,15 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ MongoDB Bağlandı!'))
   .catch(err => console.error('❌ Bağlantı Hatası:', err.message));
 
-// ==========================================
-// 👤 KULLANICI ŞEMASI (ORTAKLAR EKLENDİ 🤝)
-// ==========================================
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   passwordHash: { type: String, required: true },
-  sharedWith: [{ type: String }], // YENİ: Ortakların ID'lerini burada tutacağız
+  sharedWith: [{ type: String }], 
   createdAt: { type: Date, default: Date.now }
 });
 const User = mongoose.model('User', userSchema);
 
-// ==========================================
-// 🔐 AUTH (KAYIT VE GİRİŞ) API'LERİ
-// ==========================================
 app.post('/api/auth/register', async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
@@ -78,7 +71,6 @@ app.post('/api/auth/login', async (req, res, next) => {
 const verifyToken = (req, res, next) => {
   const authHeader = req.header('Authorization');
   if (!authHeader) return res.status(401).json({ error: 'Erişim reddedildi!' });
-
   const token = authHeader.split(' ')[1];
   try {
     const verified = jwt.verify(token, process.env.JWT_SECRET);
@@ -87,46 +79,31 @@ const verifyToken = (req, res, next) => {
   } catch (err) { res.status(400).json({ error: 'Geçersiz bilet!' }); }
 };
 
-// ==========================================
-// 🤝 YENİ: ORTAK EKLEME API'Sİ
-// ==========================================
 app.post('/api/share', verifyToken, async (req, res, next) => {
   try {
     const { partnerEmail } = req.body;
-    
-    // Arkadaşımızı veritabanında bulalım
     const partner = await User.findOne({ email: partnerEmail });
     if (!partner) return res.status(404).json({ error: "Bu e-posta ile kayıtlı kullanıcı bulunamadı!" });
-
     if (partner._id.toString() === req.user.userId) return res.status(400).json({ error: "Kendinizle paylaşamazsınız!" });
 
     const me = await User.findById(req.user.userId);
-
-    // Eğer daha önce eklenmemişse, birbirimizi ortak olarak ekleyelim
     if (!me.sharedWith.includes(partner._id.toString())) {
       me.sharedWith.push(partner._id.toString());
       await me.save();
-
-      // Karşı tarafın listesine de beni ekle (Karşılıklı bağlantı)
       if (!partner.sharedWith.includes(me._id.toString())) {
         partner.sharedWith.push(me._id.toString());
         await partner.save();
       }
     }
-    
     res.json({ message: "Liste başarıyla paylaşıldı!" });
   } catch (err) { next(err); }
 });
 
-// ==========================================
-// 📦 ÜRÜN ŞEMASI VE FOTOĞRAF AYARLARI
-// ==========================================
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
-
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: { folder: 'shopping-app-images', allowed_formats: ['jpg', 'jpeg', 'png', 'webp'] }
@@ -145,28 +122,100 @@ const itemSchema = new mongoose.Schema({
 });
 const Item = mongoose.model('Item', itemSchema);
 
-// GET: Sadece benim değil, ortaklarımın ürünlerini de getir
 app.get('/api/items', verifyToken, async (req, res, next) => {
   try {
     const me = await User.findById(req.user.userId);
-    const allowedUserIds = [req.user.userId, ...me.sharedWith]; // Ben + Ortaklarım
-
+    const allowedUserIds = [req.user.userId, ...me.sharedWith];
     const items = await Item.find({ userId: { $in: allowedUserIds } }).sort({ createdAt: -1 });
     res.json(items);
   } catch (err) { next(err); }
 });
 
+// ==========================================
+// 🚀 BÜYÜK FİNAL: CÜMLEDEN TOPLU LİSTE OLUŞTURAN AI
+// ==========================================
+app.post('/api/items/ai-generate', verifyToken, async (req, res, next) => {
+  try {
+    const { prompt } = req.body;
+    if (!prompt) return res.status(400).json({ error: "Lütfen bir cümle girin!" });
+    
+    console.log(`🤖 AI Toplu Liste Düşünüyor: "${prompt}"`);
+
+    // SİHİRLİ KOMUTUMUZ (PROMPT ENGINEERING)
+    const systemPrompt = `
+      Sen bir alışveriş asistanısın. Kullanıcının şu cümlesinden gereken tüm malzemeleri çıkar: "${prompt}"
+      Bana SADECE geçerli bir JSON dizisi (array) döndür. Başka hiçbir açıklama veya markdown işareti kullanma.
+      Her ürün objesi şu formatta olmalı:
+      {
+        "name": "Ürün Adı",
+        "category": "Gıda", // Sadece şunlardan biri: Gıda, Temizlik, Teknoloji, Giyim, Genel
+        "price": 50 // Tahmini ortalama bir fiyat (Sadece Sayı olmalı)
+      }
+    `;
+
+    const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
+    });
+
+    const aiData = await aiResponse.json();
+    let aiText = aiData.candidates[0].content.parts[0].text.trim();
+
+    // AI bazen inat edip ```json yazarak döner, onu temizliyoruz
+    if (aiText.startsWith('```json')) aiText = aiText.substring(7, aiText.length - 3).trim();
+    else if (aiText.startsWith('```')) aiText = aiText.substring(3, aiText.length - 3).trim();
+
+    // AI'nın verdiği metni gerçek bir JavaScript verisine çeviriyoruz
+    const itemsArray = JSON.parse(aiText);
+
+    // Gelen ürünleri veritabanı formatımıza uyarlayıp hazırlıyoruz
+    const itemsToInsert = itemsArray.map(item => ({
+      userId: req.user.userId,
+      name: item.name,
+      category: ["Gıda", "Temizlik", "Teknoloji", "Giyim", "Genel"].includes(item.category) ? item.category : "Genel",
+      price: parseFloat(item.price) || 50,
+      quantity: 1,
+      imageUrl: ""
+    }));
+
+    // SİHİR: Hepsini tek seferde veritabanına kaydet!
+    const newItems = await Item.insertMany(itemsToInsert);
+    
+    res.status(201).json(newItems);
+  } catch (err) {
+    console.error("❌ AI Kafa Karışıklığı Yaşadı:", err);
+    res.status(500).json({ error: "Yapay zeka listeyi oluşturamadı, cümleyi değiştirip tekrar deneyin." });
+  }
+});
+
+// (Eski tekli ürün ekleme API'si aynen duruyor)
 app.post('/api/items', verifyToken, upload.single('image'), async (req, res, next) => {
   try {
-    const { name, price, category, quantity } = req.body; 
+    const { name, price, quantity, category } = req.body; 
     let imageUrl = "";
     if (req.file && req.file.path) imageUrl = req.file.path;
+
+    let finalCategory = category || "Genel"; 
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: `Kategoriyi tahmin et: "${name}". Sadece BİRİNİ yaz: Gıda, Temizlik, Teknoloji, Giyim, Genel.` }] }] })
+        });
+        const aiData = await aiResponse.json();
+        const predictedCategory = aiData.candidates[0].content.parts[0].text.trim();
+        const validCategories = ["Gıda", "Temizlik", "Teknoloji", "Giyim", "Genel"];
+        if (validCategories.includes(predictedCategory)) finalCategory = predictedCategory;
+      } catch (aiErr) { console.log("Tekli AI tahmini atlandı."); }
+    }
 
     const newItem = await Item.create({
       userId: req.user.userId,
       name,
       price: parseFloat(price),
-      category,
+      category: finalCategory,
       quantity: quantity || 1,
       imageUrl: imageUrl
     });
@@ -174,18 +223,16 @@ app.post('/api/items', verifyToken, upload.single('image'), async (req, res, nex
   } catch (err) { next(err); }
 });
 
-// PUT & DELETE: Ortaklarımın ürünlerini silmeme ve düzenlememe izin ver
 app.put('/api/items/:id', verifyToken, async (req, res, next) => {
   try {
     const me = await User.findById(req.user.userId);
     const allowedUserIds = [req.user.userId, ...me.sharedWith];
-
     const updated = await Item.findOneAndUpdate(
       { _id: req.params.id, userId: { $in: allowedUserIds } }, 
       req.body, 
       { returnDocument: 'after' }
     );
-    if (!updated) return res.status(404).json({ error: 'Bulunamadı veya yetkiniz yok' });
+    if (!updated) return res.status(404).json({ error: 'Bulunamadı' });
     res.json(updated);
   } catch (err) { next(err); }
 });
@@ -194,18 +241,14 @@ app.delete('/api/items/:id', verifyToken, async (req, res, next) => {
   try {
     const me = await User.findById(req.user.userId);
     const allowedUserIds = [req.user.userId, ...me.sharedWith];
-
     const deleted = await Item.findOneAndDelete({ _id: req.params.id, userId: { $in: allowedUserIds } });
-    if (!deleted) return res.status(404).json({ error: 'Bulunamadı veya yetkiniz yok' });
+    if (!deleted) return res.status(404).json({ error: 'Bulunamadı' });
     res.json({ ok: true });
   } catch (err) { next(err); }
 });
 
-// ==========================================
-// 🚨 GİZLİ HATALARI ÇEVİREN YAKALAYICI
-// ==========================================
 app.use((err, req, res, next) => {
-  console.error("💥 KESİN HATA SEBEBİ:", err.message || err);
+  console.error("💥 HATA:", err.message || err);
   res.status(500).json({ error: err.message || 'Sunucu hatası' });
 });
 
