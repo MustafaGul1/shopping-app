@@ -41,7 +41,7 @@ function App() {
   const [aiPrompt, setAiPrompt] = useState("");
   const [isAiLoading, setIsAiLoading] = useState(false);
 
-  const API_URL = "https://shopping-backend-x3jp.onrender.com/api";
+  const API_URL = "https://shopping-app-hkgm.onrender.com";
 
   const commonProducts = [
     "Süt", "Ekmek", "Yumurta", "Peynir", "Yoğurt", "Domates", 
