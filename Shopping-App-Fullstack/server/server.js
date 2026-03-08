@@ -146,13 +146,12 @@ app.post('/api/items/ai-generate', verifyToken, async (req, res, next) => {
         "price": 50 
       }
     `;
-
-    // 🔥 GÜNCELLEME: Ücretsiz ve kotası açık olan gemini-2.0-flash modelini kullanıyoruz!
-    const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+//  GÜNCELLEME: Ücretsiz ve kotası devasa olan gemini-1.5-flash modelini
+  const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
-    });
+  });
 
     const aiData = await aiResponse.json();
 

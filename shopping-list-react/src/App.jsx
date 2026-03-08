@@ -46,7 +46,8 @@ function App() {
   const commonProducts = [
     "Süt", "Ekmek", "Yumurta", "Peynir", "Yoğurt", "Domates", 
     "Salatalık", "Elma", "Muz", "Çay", "Kahve", "Şeker", 
-    "Tuz", "Deterjan", "Şampuan", "Diş Macunu", "Peçete"
+    "Tuz", "Deterjan", "Şampuan", "Diş Macunu", "Peçete", "Sabun", "Meyve Suyu", "Bisküvi", "Makarna", "Pirinç"
+    
   ];
 
   // ==========================================
@@ -376,7 +377,7 @@ function App() {
           <span style={{ fontSize: '1.2rem' }}>🤝</span>
           <input 
             type="email" 
-            placeholder="Arkadaşının Emailini Gir..." 
+            placeholder="Emailini Gir..." 
             value={partnerEmail} 
             onChange={e => setPartnerEmail(e.target.value)}
             style={{ flex: 1, margin: 0 }}
@@ -407,7 +408,7 @@ function App() {
           className={`fav-filter-btn ${showFavoritesOnly ? 'active' : ''}`}
           onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
         >
-          {showFavoritesOnly ? "❤️ Favoriler" : "🤍 Tümü"}
+          {showFavoritesOnly ? "❤️‍🔥 Favoriler" : "💌 Tümü"}
         </button>
       </div>
 
