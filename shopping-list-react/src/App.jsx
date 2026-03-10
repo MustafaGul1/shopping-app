@@ -46,7 +46,10 @@ function App() {
   const commonProducts = [
     "Süt", "Ekmek", "Yumurta", "Peynir", "Yoğurt", "Domates", 
     "Salatalık", "Elma", "Muz", "Çay", "Kahve", "Şeker", 
-    "Tuz", "Deterjan", "Şampuan", "Diş Macunu", "Peçete", "Sabun", "Meyve Suyu", "Bisküvi", "Makarna", "Pirinç"
+    "Tuz", "Deterjan", "Şampuan", "Diş Macunu", "Peçete", "Sabun", "Meyve Suyu", "Bisküvi", "Makarna", "Pirinç", "Köfte", "Tavuk Göğsü", "Balık Fileto", "Zeytinyağı", "Un", "Kabartma Tozu", "Çikolata", "Dondurma", "Kola", "Gazoz", "Mısır Gevreği", "Bal", "Reçel", "Tereyağı", "Sıvı Yağ", "Ketçap", "Mayonez", "Hardal", "Turşu", "Cips", "Kuruyemiş", "Maden Suyu", "Limonata", "Bulaşık Süngeri", "Çamaşır Suyu", "Yumuşatıcı", "Mısır", "Bezelye", "Nohut", "Fasulye", "Mercimek", "Baharat", "Sirke", "Nar Ekşisi", "Lavaş", "Tost Ekmeği", "Kraker", "Gofret", "Sakız", "Puding", "Krema", "Labne", "Hellim", "Sosis", "Salam", "Sucuk", "Pastırma", "Mantar", "Biber", "Patlıcan", "Kabak", "Ispanak", "Marul", "Maydanoz", "Dereotu", "Taze Soğan", "Sarımsak", "Kuru Soğan", "Patates", "Havuç", "Turp", "Karnabahar", "Brokoli", "Lahana", "Mısır Unu", "Galeta Unu", "Nişasta", "Pudra Şekeri", "Vanilya", "Hamur Kabartma Tozu", "Maya", "Kuru Üzüm", "Ceviz İçi", "Fındık İçi", "Badem", "Fıstık", "Hurma", "Kayısı Kurusu", "İncir Kurusu", "Gün Kurusu", "Kuş Üzümü", "Dolmalık Fıstık", "Çam Fıstığı", "Haşhaş", "Susam", "Çörek Otu", "Ihlamur", "Adaçayı", "Yeşil Çay", "Papatya Çayı", "Rezene Çayı", "Nane Limon", "Kuşburnu", "Salça", "Biber Salçası", "Domates Rendesi", "Ketçap", "Mayonez", "Hardal", "Barbekü Sos", "Soya Sosu", "Nar Ekşisi", "Elma Sirkesi", "Üzüm Sirkesi", "Limon Suyu", "Turşu Suyu", "Şalgam Suyu", "Ayran", "Kefir", "Sütlü İçecek", "Enerji İçeceği", "Soğuk Çay", "Limonata", "Meyve Suyu", "Sebze Suyu", "Su", "Maden Suyu", "Soda", "Tonik", "Gazoz", "Kola", "Portakallı Gazoz", "Limonlu Gazoz", "Sade Gazoz"
+    
+    
+    
     
   ];
 
@@ -115,7 +118,7 @@ function App() {
     if (!partnerEmail.trim()) return;
 
     try {
-      const res = await fetch(`${API_URL}/share`, {
+      const res = await fetch(`${API_URL}/users/share`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
