@@ -52,6 +52,31 @@ app.post('/api/auth/register', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+
+
+app.post('/api/auth/login', async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(401).json({ error: 'Kullanıcı bulunamadı!' });
+    const isPasswordCorrect = bcrypt.compareSync(password, user.passwordHash);
+    if (!isPasswordCorrect) return res.status(401).json({ error: 'Şifre hatalı!' });
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    res.json({ message: 'Giriş başarılı!', token, user: { id: user._id, name: user.name, email: user.email }});
+  } catch (err) { next(err); }
+});
+
+const verifyToken = (req, res, next) => {
+  const authHeader = req.header('Authorization');
+  if (!authHeader) return res.status(401).json({ error: 'Erişim reddedildi!' });
+  const token = authHeader.split(' ')[1];
+  try {
+    const verified = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = verified;
+    next();
+  } catch (err) { res.status(400).json({ error: 'Geçersiz bilet!' }); }
+};
+
 // 🔥 YENİ SİLAH: E-posta ile Arkadaş Ekleme ve Listeleri Birleştirme
 app.post('/api/users/share', verifyToken, async (req, res, next) => {
   try {
@@ -92,29 +117,6 @@ app.post('/api/users/share', verifyToken, async (req, res, next) => {
     next(err); 
   }
 });
-
-app.post('/api/auth/login', async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ error: 'Kullanıcı bulunamadı!' });
-    const isPasswordCorrect = bcrypt.compareSync(password, user.passwordHash);
-    if (!isPasswordCorrect) return res.status(401).json({ error: 'Şifre hatalı!' });
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.json({ message: 'Giriş başarılı!', token, user: { id: user._id, name: user.name, email: user.email }});
-  } catch (err) { next(err); }
-});
-
-const verifyToken = (req, res, next) => {
-  const authHeader = req.header('Authorization');
-  if (!authHeader) return res.status(401).json({ error: 'Erişim reddedildi!' });
-  const token = authHeader.split(' ')[1];
-  try {
-    const verified = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = verified;
-    next();
-  } catch (err) { res.status(400).json({ error: 'Geçersiz bilet!' }); }
-};
 
 app.post('/api/share', verifyToken, async (req, res, next) => {
   try {
