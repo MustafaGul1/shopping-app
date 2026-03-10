@@ -52,6 +52,47 @@ app.post('/api/auth/register', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// 🔥 YENİ SİLAH: E-posta ile Arkadaş Ekleme ve Listeleri Birleştirme
+app.post('/api/users/share', verifyToken, async (req, res, next) => {
+  try {
+    const { friendEmail } = req.body;
+    const myId = req.user.userId;
+
+    // 1. Arkadaşın sistemde kayıtlı mı diye bak
+    const friend = await User.findOne({ email: friendEmail });
+    if (!friend) {
+      return res.status(404).json({ error: 'Bu e-posta adresine sahip bir kullanıcı bulunamadı!' });
+    }
+
+    // 2. Kendini eklemeye çalışıyorsa engelle
+    if (friend._id.toString() === myId) {
+      return res.status(400).json({ error: 'Kendinizi arkadaş olarak ekleyemezsiniz!' });
+    }
+
+    // 3. Kendi bilgilerimizi bul
+    const me = await User.findById(myId);
+
+    // 4. Arkadaş zaten ekli mi kontrol et
+    if (me.sharedWith.includes(friend._id.toString())) {
+      return res.status(400).json({ error: 'Bu kişi zaten arkadaş listenizde!' });
+    }
+
+    // 5. Arkadaşı BİZİM listemize ekle
+    me.sharedWith.push(friend._id.toString());
+    await me.save();
+
+    // 6. Çift Taraflı Senkronizasyon (Bizi de ONUN listesine ekle)
+    if (!friend.sharedWith.includes(myId)) {
+      friend.sharedWith.push(myId);
+      await friend.save();
+    }
+
+    res.json({ message: 'Arkadaş başarıyla eklendi! Artık listelerinizi ortak görebilirsiniz.' });
+  } catch (err) { 
+    next(err); 
+  }
+});
+
 app.post('/api/auth/login', async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -108,15 +149,27 @@ const upload = multer({ storage: storage });
 const itemSchema = new mongoose.Schema({
   userId: { type: String, required: true },
   name: { type: String, required: true },
-  price: { type: Number, required: true },
+  
+  // 🔥 ESKİ TEK FİYAT YERİNE, YENİ MARKET FİYATLARI SİSTEMİ:
+  marketPrices: [{
+    marketName: { type: String },  // Örn: "BİM" veya "A101"
+    price: { type: Number },       // Örn: 42.50
+    campaignNote: { type: String } // Örn: "Chokokare çeşidinde 2 al 1 öde var!"
+  }],
+
   category: { type: String, default: "Genel" },
   quantity: { type: Number, default: 1 },
   isFavorite: { type: Boolean, default: false },
+  
+  // Bulut resim yükleme altyapın zaten harika çalışıyor:
   imageUrl: { type: String, default: "" }, 
+  
+  // 🔥 YENİ: Marketteki kişi alıp sepete atınca uygulamanın haberi olsun:
+  isPurchased: { type: Boolean, default: false },
+  
   createdAt: { type: Date, default: Date.now }
 });
 const Item = mongoose.model('Item', itemSchema);
-
 app.get('/api/items', verifyToken, async (req, res, next) => {
   try {
     const me = await User.findById(req.user.userId);
@@ -126,9 +179,9 @@ app.get('/api/items', verifyToken, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ==========================================
-// 🚀 ZIRHLANDIRILMIŞ AI LİSTE OLUŞTURUCU (ÜCRETSİZ FLASH MODELİ)
-// ==========================================
+
+// 🚀 ZIRHLANDIRILMIŞ AI LİSTE OLUŞTURUCU 
+
 app.post('/api/items/ai-generate', verifyToken, async (req, res, next) => {
   try {
     const { prompt } = req.body;
@@ -146,7 +199,7 @@ app.post('/api/items/ai-generate', verifyToken, async (req, res, next) => {
         "price": 50 
       }
     `;
-// GÜNCELLEME:  Modeli olan gemini-2.5-flash'a geçtik!
+// GÜNCELLEME:  Modeli olan gemini-2.5-flash'adayım
   const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -194,7 +247,7 @@ app.post('/api/items', verifyToken, upload.single('image'), async (req, res, nex
     
     if (process.env.GEMINI_API_KEY) {
       try {
-        // 🔥 GÜNCELLEME: Tekli tahminler için de ücretsiz gemini-2.0-flash modelini kullanıyoruz!
+        // 🔥 GÜNCELLEME: Tekli tahminler için de ücretsiz gemini-2.0-flash modelini 
         const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
