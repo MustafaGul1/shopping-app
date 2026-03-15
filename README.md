@@ -118,11 +118,12 @@ Projenizi görmek için tarayıcınızda şu adrese gidin: http://localhost:5173
 * JWT Token ile yetkilendirme
  * AI Alışveriş Asistanı: Doğal dil ile prompt girme (Örn: "Kahvaltı hazırlayacağım"),AI yükleme animasyonu ve otomatik listeleme
 * Ortak Ekleme (Arkadaşlık Sistemi): E-posta adresi ile arkadaş bulma,Listelerin çift taraflı (bi-directional) senkronizasyonu
-```
+
 ## Ürün & Fiyat Yönetimi: Ürün adı
 * Kategori ve fotoğraf (Cloudinary) ekleme
 * Market fiyatları (BİM, A101) ve kampanya notları girme
 *  Satın alınan ürünleri "Favori/Alındı" olarak işaretleme.
+
 
 ## 📊 Veritabanı Şeması User Collection JSON{
 ```
