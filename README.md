@@ -106,15 +106,17 @@ Projenizi görmek için tarayıcınızda şu adrese gidin: http://localhost:5173
 
 ## MongoDB Atlas Koleksiyonlar Koleksiyon Açıklama
 ```
- *users Kullanıcı bilgileri
-* şifre hash'leri ve Ekli Arkadaşların referansları
-* itemsÜrün adları, fotoğrafları, AI tarafından üretilen metinler ve Market fiyat detayları
+ users Kullanıcı bilgileri
+ şifre hash'leri ve Ekli Arkadaşların referansları
+ itemsÜrün adları, fotoğrafları, AI tarafından üretilen metinler ve Market fiyat detayları
 ```
-👤 Kullanıcı Ekranları Giriş & Kayıt Ekranı:
-```
- * E-posta + şifre ile güvenli giriş
- *JWT Token ile yetkilendirme
-* AI Alışveriş Asistanı: Doğal dil ile prompt girme (Örn: "Kahvaltı hazırlayacağım"),AI yükleme animasyonu ve otomatik listeleme
+
+
+ 👤 Kullanıcı Ekranları Giriş & Kayıt Ekranı:
+
+ *  E-posta + şifre ile güvenli giriş
+* JWT Token ile yetkilendirme
+ * AI Alışveriş Asistanı: Doğal dil ile prompt girme (Örn: "Kahvaltı hazırlayacağım"),AI yükleme animasyonu ve otomatik listeleme
 * Ortak Ekleme (Arkadaşlık Sistemi): E-posta adresi ile arkadaş bulma,Listelerin çift taraflı (bi-directional) senkronizasyonu
 ```
 ## Ürün & Fiyat Yönetimi: Ürün adı
