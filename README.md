@@ -87,6 +87,7 @@ CLOUDINARY_API_KEY=your_cloudinary_key
 CLOUDINARY_API_SECRET=your_cloudinary_secret
 ⚠️ ÖNEMLİ: Şifrelerinizdeki özel karakterleri URL encode etmeyi unutmayın!
 ```
+```
 5. Uygulamayı Çalıştırın
 * Terminal 1 (Backend)*
 ```bash
@@ -162,4 +163,4 @@ Item CollectionJSON{
 
 Lisans 
 
-* ** Bu proje, modern web mimarilerini  ve yapay zeka entegrasyonlarını öğrenmek amacıyla bağımsız bir portfolyo projesi olarak geliştirdim.
+*  Bu proje, modern web mimarilerini  ve yapay zeka entegrasyonlarını öğrenmek amacıyla bağımsız bir portfolyo projesi olarak geliştirdim.
