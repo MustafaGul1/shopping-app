@@ -3,7 +3,7 @@
 **Proje Açıklaması:** ShopSync, kullanıcıların aile üyeleri veya arkadaşlarıyla ortak alışveriş listeleri oluşturabildiği, yapay zeka desteğiyle saniyeler içinde malzeme listesi çıkarabildiği ve ürünlerin farklı marketlerdeki fiyatlarını karşılaştırabildiği modern bir e-ticaret/yardımlaşma platformudur.
 
 ## 📖 Proje Senaryosu
-Market alışverişleri sırasında yaşanan "Hangi marka? Hangi çeşit?" karmaşasını önleyen bu platform, iki ana kullanım senaryosu ile çalışır:
+Market alışverişleri sırasında yaşanan 'Hangi marka? Hangi çeşit?' karmaşasını önleyen bu platform, iki ana kullanım senaryosu ile çalışır:
 
 * **Evdeki/Destek Kullanıcı:** Aile üyesinin e-postasını girerek hesabı bağlar. Listeye eklenecek ürünün tam fotoğrafını yükler, internetten BİM, ŞOK, A101, Migros gibi market fiyatlarını araştırıp not düşer.
 * **Marketteki Kullanıcı:** Alışveriş sırasında sadece listeye ve yüklenen fotoğrafa bakar, doğru ürünü raftan alıp tek tıkla "Sepete Eklendi" olarak işaretler.
@@ -53,30 +53,81 @@ shopsync/
 │   └── server.js           # Ana sunucu, Express rotaları, AI ve Cloudinary ayarları
 └── README.md
 ```
-## 🚀 Kurulum ve ÇalıştırmaGereksinimler: Node.js, MongoDB Atlas hesabı, Google Gemini API Anahtarı1. Projeyi KlonlayınBashgit clone <repo-url>
+## 🚀 Kurulum ve Çalıştırma
+
+Gereksinimler:
+* Node.js,MongoDB Atlas hesabı, Google Gemini API Anahtarı
+
+```
+
+1. Projeyi Klonlayın
+bash
+git clone <repo-url>
 cd shopsync_repo
-2. Bağımlılıkları YükleyinBashcd server && npm install
+```
+```
+2. Bağımlılıkları Yükleyin
+Bash
+cd server && npm install
 cd ../client && npm install
-3. Environment (.env) Dosyasını Yapılandırınserver klasörü içine .env dosyası oluşturun:Kod snippet'iPORT=10000
-MONGODB_URI=mongodb+srv://<username>:<password>@cluster0...
+```
+```
+3. Bağımlılıkları Yükleyin
+Bash
+cd server && npm install
+cd ../client && npm install
+```
+```
+4. Environment (.env) Dosyasını Yapılandırınserver klasörü içine .env dosyası oluşturun:Kod snippet 'iPORT=10000
+MONGODB_URI=mongodb+srv://<username>:<password>
 JWT_SECRET=your_super_secret_key
 GEMINI_API_KEY=your_google_ai_key
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_cloudinary_key
 CLOUDINARY_API_SECRET=your_cloudinary_secret
-⚠️ ÖNEMLİ: Şifrelerinizdeki özel karakterleri URL encode etmeyi unutmayın!4. Uygulamayı ÇalıştırınBash# Terminal 1 (Backend)
+⚠️ ÖNEMLİ: Şifrelerinizdeki özel karakterleri URL encode etmeyi unutmayın!
+```
+5. Uygulamayı Çalıştırın
+* Terminal 1 (Backend)*
+```bash
 cd server
 node server.js
-
-# Terminal 2 (Frontend)
+```
+```
+*Terminal 2 (Frontend):*
 cd client
 npm run dev
-5. Tarayıcıda Açın http://localhost:5173🗄️ MongoDB Atlas KoleksiyonlarıKoleksiyonAçıklamausersKullanıcı bilgileri, şifre hash'leri ve Ekli Arkadaşların referanslarıitemsÜrün adları, fotoğrafları, AI tarafından üretilen metinler ve Market fiyat detayları👤 Kullanıcı EkranlarıGiriş & Kayıt Ekranı: E-posta + şifre ile güvenli giriş, JWT Token ile yetkilendirme.AI Alışveriş Asistanı: Doğal dil ile prompt girme (Örn: "Kahvaltı hazırlayacağım"), AI yükleme animasyonu ve otomatik listeleme.Ortak Ekleme (Arkadaşlık Sistemi): E-posta adresi ile arkadaş bulma, Listelerin çift taraflı (bi-directional) senkronizasyonu.Ürün & Fiyat Yönetimi: Ürün adı, kategori ve fotoğraf (Cloudinary) ekleme, Market fiyatları (BİM, A101) ve kampanya notları girme, Satın alınan ürünleri "Favori/Alındı" olarak işaretleme.📊 Veritabanı ŞemasıUser CollectionJSON{
+```
+```
+5. Tarayıcıda Açın
+Projenizi görmek için tarayıcınızda şu adrese gidin: http://localhost:5173
+```
+
+## MongoDB Atlas Koleksiyonlar Koleksiyon Açıklama
+```
+ *users Kullanıcı bilgileri
+* şifre hash'leri ve Ekli Arkadaşların referansları
+* itemsÜrün adları, fotoğrafları, AI tarafından üretilen metinler ve Market fiyat detayları
+```
+👤 Kullanıcı Ekranları Giriş & Kayıt Ekranı:
+```
+ * E-posta + şifre ile güvenli giriş
+ *JWT Token ile yetkilendirme
+* AI Alışveriş Asistanı: Doğal dil ile prompt girme (Örn: "Kahvaltı hazırlayacağım"),AI yükleme animasyonu ve otomatik listeleme
+* Ortak Ekleme (Arkadaşlık Sistemi): E-posta adresi ile arkadaş bulma,Listelerin çift taraflı (bi-directional) senkronizasyonu
+```
+## Ürün & Fiyat Yönetimi: Ürün adı
+* Kategori ve fotoğraf (Cloudinary) ekleme
+* Market fiyatları (BİM, A101) ve kampanya notları girme
+*  Satın alınan ürünleri "Favori/Alındı" olarak işaretleme.
+
+## 📊 Veritabanı Şeması User Collection JSON{
+```
   "_id": "ObjectId",
   "name": "string",
   "email": "string",
   "passwordHash": "string",
-  "sharedWith": ["ObjectId"], // Ekli arkadaşların User ID'leri
+  "sharedWith": ["ObjectId"], 
   "createdAt": "DateTime"
 }
 Item CollectionJSON{
@@ -90,8 +141,25 @@ Item CollectionJSON{
       "campaignNote": "string"
     }
   ],
-  "imageUrl": "string", // Cloudinary'den dönen güvenli URL
+  "imageUrl": "string", 
   "isPurchased": "boolean",
   "createdAt": "DateTime"
 }
-🔐 Güvenlik ÖzellikleriBCrypt.js ile şifrelerin geri döndürülemez şekilde hashlenmesi.JWT (JSON Web Token) ile API rotalarının korunması (Sadece giriş yapanlar liste görebilir).CORS politikalarının Vercel ve Render arasında güvenli yapılandırılması.Dotenv ile API anahtarlarının sunucu tarafında gizlenmesi.🐛 Sorun Giderme1. AI Hata Veriyor (Limit 0 veya Geo-blocking)Çözüm: Google Gemini API'nin Avrupa sunucularında kısıtlamaları vardır. Projenin Backend kısmı Render.com üzerinden ABD (US) sunucularında (Oregon/Ohio) ayağa kaldırılarak bu sorun kökten çözülmüştür.2. Kullanıcı Arkadaş Olarak EklenemiyorÇözüm: E-posta adresinin büyük/küçük harf duyarlılığını kontrol edin. Kodda trim() ve toLowerCase() fonksiyonlarının devrede olduğundan emin olun.
+```
+## Güvenlik Özellikleri:
+
+*  BCrypt.js ile şifrelerin geri döndürülemez şekilde hashlenmesi
+*  JWT (JSON Web Token) ile API rotalarının korunması (Sadece giriş yapanlar liste görebilir)
+*  CORS politikalarının Vercel ve Render arasında güvenli yapılandırılması
+*  Dotenv ile API anahtarlarının sunucu tarafında gizlenmesi.
+
+## Sorun Giderme
+
+* 1- AI Hata Veriyor Limit 0 ve Geo-blocking
+* Çözüm: Google Gemini API'nin Avrupa sunucularında kısıtlamaları vardır. Projenin Backend kısmı Render.com üzerinden ABD (US) sunucularında (Oregon/Ohio) ayağa kaldırılarak bu sorun kökten çözülmüştür
+* 2- Kullanıcı Arkadaş Olarak Eklenemiyor
+* Çözüm: E-posta adresinin büyük/küçük harf duyarlılığını kontrol edin. Kodda trim() ve toLowerCase() fonksiyonlarının devrede olduğundan emin olun.
+
+Lisans 
+
+* ** Bu proje, modern web mimarilerini  ve yapay zeka entegrasyonlarını öğrenmek amacıyla bağımsız bir portfolyo projesi olarak geliştirdim.
