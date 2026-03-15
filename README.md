@@ -52,3 +52,46 @@ shopsync/
 │   ├── .env                # Gizli API anahtarları (Git'e atılmaz)
 │   └── server.js           # Ana sunucu, Express rotaları, AI ve Cloudinary ayarları
 └── README.md
+```
+## 🚀 Kurulum ve ÇalıştırmaGereksinimler: Node.js, MongoDB Atlas hesabı, Google Gemini API Anahtarı1. Projeyi KlonlayınBashgit clone <repo-url>
+cd shopsync_repo
+2. Bağımlılıkları YükleyinBashcd server && npm install
+cd ../client && npm install
+3. Environment (.env) Dosyasını Yapılandırınserver klasörü içine .env dosyası oluşturun:Kod snippet'iPORT=10000
+MONGODB_URI=mongodb+srv://<username>:<password>@cluster0...
+JWT_SECRET=your_super_secret_key
+GEMINI_API_KEY=your_google_ai_key
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_key
+CLOUDINARY_API_SECRET=your_cloudinary_secret
+⚠️ ÖNEMLİ: Şifrelerinizdeki özel karakterleri URL encode etmeyi unutmayın!4. Uygulamayı ÇalıştırınBash# Terminal 1 (Backend)
+cd server
+node server.js
+
+# Terminal 2 (Frontend)
+cd client
+npm run dev
+5. Tarayıcıda Açın http://localhost:5173🗄️ MongoDB Atlas KoleksiyonlarıKoleksiyonAçıklamausersKullanıcı bilgileri, şifre hash'leri ve Ekli Arkadaşların referanslarıitemsÜrün adları, fotoğrafları, AI tarafından üretilen metinler ve Market fiyat detayları👤 Kullanıcı EkranlarıGiriş & Kayıt Ekranı: E-posta + şifre ile güvenli giriş, JWT Token ile yetkilendirme.AI Alışveriş Asistanı: Doğal dil ile prompt girme (Örn: "Kahvaltı hazırlayacağım"), AI yükleme animasyonu ve otomatik listeleme.Ortak Ekleme (Arkadaşlık Sistemi): E-posta adresi ile arkadaş bulma, Listelerin çift taraflı (bi-directional) senkronizasyonu.Ürün & Fiyat Yönetimi: Ürün adı, kategori ve fotoğraf (Cloudinary) ekleme, Market fiyatları (BİM, A101) ve kampanya notları girme, Satın alınan ürünleri "Favori/Alındı" olarak işaretleme.📊 Veritabanı ŞemasıUser CollectionJSON{
+  "_id": "ObjectId",
+  "name": "string",
+  "email": "string",
+  "passwordHash": "string",
+  "sharedWith": ["ObjectId"], // Ekli arkadaşların User ID'leri
+  "createdAt": "DateTime"
+}
+Item CollectionJSON{
+  "_id": "ObjectId",
+  "userId": "ObjectId",
+  "name": "string",
+  "marketPrices": [
+    {
+      "marketName": "string",
+      "price": "decimal",
+      "campaignNote": "string"
+    }
+  ],
+  "imageUrl": "string", // Cloudinary'den dönen güvenli URL
+  "isPurchased": "boolean",
+  "createdAt": "DateTime"
+}
+🔐 Güvenlik ÖzellikleriBCrypt.js ile şifrelerin geri döndürülemez şekilde hashlenmesi.JWT (JSON Web Token) ile API rotalarının korunması (Sadece giriş yapanlar liste görebilir).CORS politikalarının Vercel ve Render arasında güvenli yapılandırılması.Dotenv ile API anahtarlarının sunucu tarafında gizlenmesi.🐛 Sorun Giderme1. AI Hata Veriyor (Limit 0 veya Geo-blocking)Çözüm: Google Gemini API'nin Avrupa sunucularında kısıtlamaları vardır. Projenin Backend kısmı Render.com üzerinden ABD (US) sunucularında (Oregon/Ohio) ayağa kaldırılarak bu sorun kökten çözülmüştür.2. Kullanıcı Arkadaş Olarak EklenemiyorÇözüm: E-posta adresinin büyük/küçük harf duyarlılığını kontrol edin. Kodda trim() ve toLowerCase() fonksiyonlarının devrede olduğundan emin olun.
